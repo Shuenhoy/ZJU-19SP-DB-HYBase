@@ -1,4 +1,4 @@
-namespace MiniSQL.BufferManager
+namespace HYBase.BufferManager
 {
     public enum ErrorCode
     {

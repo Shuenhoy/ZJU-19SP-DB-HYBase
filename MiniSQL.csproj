@@ -3,7 +3,7 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.2</TargetFramework>
-    <RootNamespace>MiniSQL</RootNamespace>
+    <RootNamespace>HYBase</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

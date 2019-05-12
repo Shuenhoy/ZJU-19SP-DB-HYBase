@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace MiniSQL.RecordManager
+namespace HYBase.RecordManager
 {
     public class Record
     {

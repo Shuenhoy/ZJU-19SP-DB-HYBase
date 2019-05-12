@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-namespace MiniSQL.RecordManager
+namespace HYBase.RecordManager
 {
     /*
     class RM_FileHandle {
@@ -24,7 +24,7 @@ namespace MiniSQL.RecordManager
         public RID InsertRecord(Span<byte> data) { throw new NotImplementedException(); }
         public void DeleteRecord(RID rid) { throw new NotImplementedException(); }
         public void UpdateRecord(Record record) { throw new NotImplementedException(); }
-        public void ForcePage(uint pageNumber) { throw new NotImplementedException(); }
+        public void ForcePage(uint pageID) { throw new NotImplementedException(); }
         public void ForceAllPages()
         {
             throw new NotImplementedException();

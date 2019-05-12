@@ -1,6 +1,6 @@
 using System;
 
-namespace MiniSQL.BufferManager
+namespace HYBase.BufferManager
 {
 
     public class FileHandle
@@ -42,11 +42,11 @@ namespace MiniSQL.BufferManager
         {
             throw new NotImplementedException();
         }
-        public void UnpinPage(uint pageNumber)
+        public void UnpinPage(uint pageID)
         {
             throw new NotImplementedException();
         }
-        public void ForcePage(uint pageNumber)
+        public void ForcePage(uint pageID)
         {
             throw new NotImplementedException();
         }

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace MiniSQL
+namespace HYBase
 {
     class Program
     {

@@ -1,6 +1,6 @@
 using System;
 using System.Runtime.InteropServices;
-namespace MiniSQL.BufferManager
+namespace HYBase.BufferManager
 {
 
     public class PageHandle

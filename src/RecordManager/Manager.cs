@@ -1,6 +1,6 @@
 using System;
 
-namespace MiniSQL.RecordManager
+namespace HYBase.RecordManager
 {
     /*
     class RM_Manager {
