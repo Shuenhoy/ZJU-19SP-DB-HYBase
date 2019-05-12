@@ -4,20 +4,26 @@ using System.Runtime.InteropServices;
 
 namespace MiniSQL.BufferManager
 {
+
+
     public class Manager
     {
         public Manager()
         {
             throw new NotImplementedException();
         }
+
         public Either<Unit, ErrorCode> CreateFile(String filename)
         {
             throw new NotImplementedException();
         }
+
+
         public Either<Unit, ErrorCode> DestroyFile(String filename)
         {
             throw new NotImplementedException();
         }
+
         public Either<FileHandle, ErrorCode> OpenFile(String filename)
         {
             throw new NotImplementedException();
