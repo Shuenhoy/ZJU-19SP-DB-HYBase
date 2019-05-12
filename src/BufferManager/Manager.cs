@@ -12,18 +12,18 @@ namespace MiniSQL.BufferManager
             throw new NotImplementedException();
         }
 
-        public void CreateFile(String filename)
+        public void CreateFile(String fileName)
         {
             throw new NotImplementedException();
         }
 
 
-        public void DestroyFile(String filename)
+        public void DestroyFile(String fileName)
         {
             throw new NotImplementedException();
         }
 
-        public FileHandle OpenFile(String filename)
+        public FileHandle OpenFile(String fileName)
         {
             throw new NotImplementedException();
         }

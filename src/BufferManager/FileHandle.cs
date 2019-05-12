@@ -42,11 +42,11 @@ namespace MiniSQL.BufferManager
         {
             throw new NotImplementedException();
         }
-        public void UnpinPage(uint page_number)
+        public void UnpinPage(uint pageNumber)
         {
             throw new NotImplementedException();
         }
-        public void ForcePage(uint page_number)
+        public void ForcePage(uint pageNumber)
         {
             throw new NotImplementedException();
         }
