@@ -1,4 +1,3 @@
-using LanguageExt;
 using System;
 using System.Runtime.InteropServices;
 
@@ -40,11 +39,11 @@ namespace MiniSQL.BufferManager
                 return MemoryMarshal.Cast<T, byte>(valSpan); */
             throw new NotImplementedException();
         }
-        public void block)
+        public void DisposeBlock(Memory<byte> block)
         {
             throw new NotImplementedException();
+        }
+
+
     }
-
-
-}
 }
