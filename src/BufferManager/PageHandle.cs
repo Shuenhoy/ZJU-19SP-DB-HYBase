@@ -5,12 +5,11 @@ namespace HYBase.BufferManager
 
     public class PageHandle
     {
-        PageHandle()
+        public PageHandle()
         {
             throw new NotImplementedException();
         }
-        Memory<byte> Data { get { throw new NotImplementedException(); } }
-        uint PageNum { get { throw new NotImplementedException(); } }
-
+        public readonly Memory<byte> Data;
+        public readonly int PageID;
     }
 }
