@@ -1,5 +1,4 @@
 using System;
-using LanguageExt;
 
 namespace MiniSQL.BufferManager
 {
@@ -10,48 +9,48 @@ namespace MiniSQL.BufferManager
         {
             throw new NotImplementedException();
         }
-        public Either<PageHandle, ErrorCode> FirstPage
+        public PageHandle FirstPage
         {
             get { throw new NotImplementedException(); }
         }
 
-        public Either<PageHandle, ErrorCode> LastPage
+        public PageHandle LastPage
         {
             get { throw new NotImplementedException(); }
         }
-        public Either<PageHandle, ErrorCode> GetNextPage(uint current)
+        public PageHandle GetNextPage(uint current)
         {
             throw new NotImplementedException();
         }
-        public Either<PageHandle, ErrorCode> GetPrevPage(uint current)
+        public PageHandle GetPrevPage(uint current)
         {
             throw new NotImplementedException();
         }
-        public Either<PageHandle, ErrorCode> GetThisPage(uint current)
+        public PageHandle GetThisPage(uint current)
         {
             throw new NotImplementedException();
         }
-        public Either<PageHandle, ErrorCode> AllocatePage()
+        public PageHandle AllocatePage()
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> DisposePage()
+        public void DisposePage()
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> MarkDirty()
+        public void MarkDirty()
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> UnpinPage(uint page_number)
+        public void UnpinPage(uint page_number)
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> ForcePage(uint page_number)
+        public void ForcePage(uint page_number)
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> ForceAllPages()
+        public void ForceAllPages()
         {
             throw new NotImplementedException();
         }

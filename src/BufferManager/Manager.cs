@@ -13,38 +13,38 @@ namespace MiniSQL.BufferManager
             throw new NotImplementedException();
         }
 
-        public Either<Unit, ErrorCode> CreateFile(String filename)
+        public void CreateFile(String filename)
         {
             throw new NotImplementedException();
         }
 
 
-        public Either<Unit, ErrorCode> DestroyFile(String filename)
+        public void DestroyFile(String filename)
         {
             throw new NotImplementedException();
         }
 
-        public Either<FileHandle, ErrorCode> OpenFile(String filename)
+        public FileHandle OpenFile(String filename)
         {
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> CloseFIle(FileHandle file)
+        public void CloseFIle(FileHandle file)
         {
             throw new NotImplementedException();
         }
 
-        public Either<Memory<byte>, ErrorCode> AllocateBlock()
+        public Memory<byte> AllocateBlock()
         {
             /*
                 Span<T> valSpan = MemoryMarshal.CreateSpan(ref val, 1);
                 return MemoryMarshal.Cast<T, byte>(valSpan); */
             throw new NotImplementedException();
         }
-        public Either<Unit, ErrorCode> DisposeBlock(Memory<byte> block)
+        public void block)
         {
             throw new NotImplementedException();
-        }
-
-
     }
+
+
+}
 }

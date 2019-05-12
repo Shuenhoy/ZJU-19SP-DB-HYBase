@@ -1,7 +1,5 @@
 using System;
 using System.Runtime.InteropServices;
-using LanguageExt;
-
 namespace MiniSQL.BufferManager
 {
 
@@ -11,8 +9,8 @@ namespace MiniSQL.BufferManager
         {
             throw new NotImplementedException();
         }
-        Either<Memory<byte>, ErrorCode> Data { get { throw new NotImplementedException(); } }
-        Either<uint, ErrorCode> PageNum { get { throw new NotImplementedException(); } }
+        Memory<byte> Data { get { throw new NotImplementedException(); } }
+        uint PageNum { get { throw new NotImplementedException(); } }
 
     }
 }
