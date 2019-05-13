@@ -1,15 +1,26 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Collections.Generic;
+using System.IO;
 
 namespace HYBase.BufferManager
 {
-
+    struct HashKey
+    {
+        FileStream file;
+        int pageNum;
+        public override int GetHashCode()
+            => HashCode.Combine(file, pageNum);
+    }
 
     public class Manager
     {
-        public Manager()
+        static int PAGE_SIZE = 4096 - Marshal.SizeOf<PageHeader>();
+        public Manager(int _numPages)
         {
-            throw new NotImplementedException();
+            pageSize = PAGE_SIZE + Marshal.SizeOf<PageHeader>();
+            numPages = _numPages;
+            hashTabel = new Dictionary<HashKey, int>();
         }
 
         public void CreateFile(String fileName)
@@ -40,7 +51,8 @@ namespace HYBase.BufferManager
         {
             throw new NotImplementedException();
         }
-
-
+        int numPages;
+        int pageSize;
+        Dictionary<HashKey, int> hashTabel;
     }
 }
