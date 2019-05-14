@@ -5,7 +5,7 @@ namespace HYBase.RecordManager
 
     class Manager
     {
-        public Manager(BufferManager.Manager bufferManager)
+        public Manager(BufferManager.BufferManager bufferManager)
         {
             throw new NotImplementedException();
         }

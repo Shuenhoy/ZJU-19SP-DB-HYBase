@@ -4,6 +4,7 @@ namespace HYBase.BufferManager
     {
         EOF,             // end of file
         PAGEPINNED,      // page pinned in buffer
+        PAGEINBUF,
         PAGENOTINBUF,    // page to be unpinned is not in buffer
         PAGEUNPINNED,    // page already unpinned
         PAGEFREE,        // page already free

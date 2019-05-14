@@ -22,13 +22,13 @@ namespace HYBase.BufferManager
             get { throw new NotImplementedException(); }
         }
 
-        public Either<PageHandle, ErrorCode> LastPage
+        public Either<ErrorCode, PageHandle> LastPage
         {
             get => GetPrevPage(header.numPages);
         }
         private bool IsValidPageNum(int pageNum)
             => isFileOpen && pageNum >= 0 && pageNum < header.numPages;
-        private Either<PageHandle, ErrorCode> GetNextOrPrevPage(int current, bool next)
+        private Either<ErrorCode, PageHandle> GetNextOrPrevPage(int current, bool next)
         {
             if (!isFileOpen) return ErrorCode.CLOSEDFILE;
             if (current != -1 && !IsValidPageNum(current))
@@ -37,19 +37,19 @@ namespace HYBase.BufferManager
             var tmp = next ? Range(current + 1, header.numPages - 1) : Range(0, current - 1)
                 .Reverse();
 
-            return tmp.AggregateWhile(Either<PageHandle, ErrorCode>.Bottom, (now, s) =>
+            return tmp.AggregateWhile(Either<ErrorCode, PageHandle>.Bottom, (now, s) =>
             {
                 var thisPage = GetThisPage(s);
                 return (thisPage.Match(
-                    Right: code => code == ErrorCode.INVALIDPAGE ? true : false,
-                    Left: _ => true), thisPage);
+                    Left: code => code == ErrorCode.INVALIDPAGE ? true : false,
+                    Right: _ => true), thisPage);
             });
         }
-        public Either<PageHandle, ErrorCode> GetNextPage(int current)
+        public Either<ErrorCode, PageHandle> GetNextPage(int current)
             => GetNextOrPrevPage(current, true);
-        public Either<PageHandle, ErrorCode> GetPrevPage(int current)
+        public Either<ErrorCode, PageHandle> GetPrevPage(int current)
             => GetNextOrPrevPage(current, false);
-        public Either<PageHandle, ErrorCode> GetThisPage(int current)
+        public Either<ErrorCode, PageHandle> GetThisPage(int current)
         {
             throw new NotImplementedException();
         }
@@ -79,7 +79,7 @@ namespace HYBase.BufferManager
         }
 
         private FileHeader header;
-        private Manager bufferManager;
+        private BufferManager bufferManager;
         bool isFileOpen;
         bool isHeaderCHanged;
 
