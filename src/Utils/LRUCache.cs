@@ -34,13 +34,25 @@ namespace HYBase.Utils
                 }
             });
         }
+        public void Remove(K key)
+        {
+            hashTable.TryGetValue<K, LinkedListNode<(K key, T value)>>(key).IfSome(node =>
+            {
+                buffer.Remove(node);
+                hashTable.Remove(key);
+            });
+        }
         public bool Exist(K key)
             => hashTable.ContainsKey(key);
         public T Get(K key)
         {
-            if(Exist(key)){
-                return 
-            }
+            LinkedListNode<(K key, T value)> ret;
+            hashTable.TryGetValue(key, out ret);
+            return ret.Value.value;
+        }
+        public Option<T> TryGet(K key)
+        {
+            return hashTable.TryGetValue(key).Map(x => x.Value.value);
         }
     }
 }
