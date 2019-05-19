@@ -6,6 +6,7 @@ using System.Linq;
 using static HYBase.Utils.Utils;
 using LanguageExt;
 using static LanguageExt.Prelude;
+using System.Runtime.CompilerServices;
 
 namespace HYBase.BufferManager
 {
@@ -187,45 +188,6 @@ namespace HYBase.BufferManager
         }
 
 
-        // Attempts to resize the buffer to the new size
-        Either<ErrorCode, Unit> ResizeBuffer(int newSize)
-        {
-            ClearBuffer();
-            var oldBuffer = bufferTable;
-            InitBuffer();
-            int oldFirst = first;
-            numPages = newSize;
-            first = last = -1;
-            free = 0;
-            int slot = oldFirst, next;
-            while (slot != -1)
-            {
-                next = oldBuffer[slot].next;
-                hashTable.Remove((oldBuffer[slot].file, oldBuffer[slot].pageNum));
-                slot = next;
-            }
-            slot = oldFirst;
-            while (slot != -1)
-            {
-                next = oldBuffer[slot].next;
-                var rc =
-                    InternalAlloc().Bind<Unit>(newSlot =>
-                    {
-                        if (hashTable.TryAdd((oldBuffer[slot].file, oldBuffer[slot].pageNum), newSlot))
-                            return Left<ErrorCode, Unit>(ErrorCode.INVALIDPAGE);
-                        var rc1 = InitPageDesc(oldBuffer[slot].file, oldBuffer[slot].pageNum, newSlot);
-                        if (rc1.IsLeft) return rc1;
-                        Unlink(newSlot);
-                        InsertFree(newSlot);
-                        return Right<ErrorCode, Unit>(unit);
-
-                    });
-                if (rc.IsLeft) return rc;
-                slot = next;
-            }
-            return unit;
-        }
-
         // Three Methods for manipulating raw memory buffers.  These memory
         // locations are handled by the buffer manager, but are not
         // associated with a particular file.  These should be used if you
@@ -238,9 +200,20 @@ namespace HYBase.BufferManager
         }
 
         // Allocate a memory chunk that lives in buffer manager
-        Memory<byte> AllocateBlock()
+        Either<ErrorCode, Memory<byte>> AllocateBlock()
         {
-            int slot;
+            return InternalAlloc().Bind(
+                (slot) =>
+                {
+                    unsafe
+                    {
+                        int pageNum = (int)Unsafe.AsPointer(ref bufferTable[slot].data.Span.GetPinnableReference());
+                    }
+
+                },
+
+
+            );
 
         }
         // Dispose of a memory chunk managed by the buffer manager.
