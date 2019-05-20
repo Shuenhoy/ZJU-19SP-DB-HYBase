@@ -6,7 +6,7 @@ namespace HYBase.RecordManager
     public class Record
     {
         public Record() { }
-        public Span<byte> Data { get { throw new NotImplementedException(); } }
+        public byte[] Data { get { throw new NotImplementedException(); } }
         public RID Rid { get { throw new NotImplementedException(); } }
 
     }

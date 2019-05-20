@@ -1,27 +1,32 @@
 using System;
+using System.IO;
 
 namespace HYBase.RecordManager
 {
 
-    class Manager
+    class RecordManager
     {
-        public Manager(BufferManager.BufferManager bufferManager)
+        public RecordManager(BufferManager.BufferManager bufferManager)
         {
             throw new NotImplementedException();
         }
-        public void CreateFile(String fileName, int recordSize)
+        public Record GetRec(FileStream file, RID rid)
         {
             throw new NotImplementedException();
         }
-        public void DestroyFile(String fileName)
+        public void InsertRec(FileStream file, byte[] data, RID rid)
         {
             throw new NotImplementedException();
         }
-        public FileHandle OpenFile(String fileName)
+        public void DeleteRec(FileStream file, RID rid)
         {
             throw new NotImplementedException();
         }
-        void CloseFile(FileHandle fileHandle)
+        public void UpdateRec(FileStream file, Record rec)
+        {
+            throw new NotImplementedException();
+        }
+        public void ForcePages(int pageNum)
         {
             throw new NotImplementedException();
         }

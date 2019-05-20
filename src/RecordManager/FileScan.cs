@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace HYBase.RecordManager
 {
@@ -10,7 +11,7 @@ namespace HYBase.RecordManager
     class FileScan
     {
         public FileScan() { throw new NotImplementedException(); }
-        void OpenScan<T>(FileHandle fileHandle,
+        void OpenScan<T>(FileStream file,
             int attrLength,
             int attrOffset,
             CompOp compOp,
@@ -18,5 +19,9 @@ namespace HYBase.RecordManager
         { throw new NotImplementedException(); }
 
         Record NextRecord() { throw new NotImplementedException(); }
+        void CloseScan()
+        {
+            throw new NotImplementedException();
+        }
     }
 }
