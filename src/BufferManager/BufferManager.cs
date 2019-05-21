@@ -3,6 +3,7 @@ using System.IO;
 using HYBase.Utils;
 using LanguageExt;
 using static LanguageExt.Prelude;
+using static HYBase.Utils.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
@@ -44,7 +45,7 @@ namespace HYBase.BufferManager
                 , None: () =>
                 {
                     var node = InternalAlloc();
-                    ReadPage(file, pageNum, node.Value.value.page);
+                    ReadPage(file, pageNum, ref node.Value.value.page);
                     node.Value.value.PinCount = 1;
                     node.Value.value.Dirty = false;
                     return node.Value.value.page;
@@ -68,7 +69,7 @@ namespace HYBase.BufferManager
             hashTable.TryGetValue<Key, LinkedListNode<(Key key, Page value)>>((file, pageNum)).IfSome(node =>
            {
                node.Value.value.Dirty = false;
-               WritePage(file, pageNum, node.Value.value.data);
+               WritePage(file, pageNum, node.Value.value.page);
            });
         }
         public void UnPin(FileStream file, int pageNum)
@@ -114,7 +115,7 @@ namespace HYBase.BufferManager
                 Debug.Assert(k != null, "all buffer block is pinned!");
                 if (k.Value.value.Dirty)
                 {
-                    WritePage(k.Value.key.file, k.Value.key.pageNum, k.Value.value.data);
+                    WritePage(k.Value.key.file, k.Value.key.pageNum, k.Value.value.page);
                     k.Value.value.Dirty = false;
                 }
                 hashTable.Remove(k.Value.key);
@@ -132,14 +133,15 @@ namespace HYBase.BufferManager
         {
             int offset = pageNum * Page.SIZE + Page.SIZE;
             file.Seek(offset, SeekOrigin.Begin);
-
-            file.Read(data.data, 0, Page.SIZE - sizeof(int));
+            var bytes = new byte[4096];
+            file.Read(bytes, 0, Page.SIZE - sizeof(int));
+            data = ByteArrayToStructure<PageData>(bytes);
         }
-        private void WritePage(FileStream file, int pageNum, byte[] data)
+        private void WritePage(FileStream file, int pageNum, PageData data)
         {
             int offset = pageNum * Page.SIZE + Page.SIZE;
             file.Seek(offset, SeekOrigin.Begin);
-            file.Write(data, 0, Page.SIZE);
+            file.Write(StructureToByteArray(data), 0, Page.SIZE);
         }
     }
 }

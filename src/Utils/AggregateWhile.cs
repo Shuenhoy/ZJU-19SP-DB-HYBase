@@ -4,7 +4,7 @@ using System;
 
 namespace HYBase.Utils
 {
-    public static class Utils
+    public static partial class Utils
     {
         public static IEnumerable<int> Range(int st, int ed)
             => Enumerable.Range(st, ed - st + 1);
