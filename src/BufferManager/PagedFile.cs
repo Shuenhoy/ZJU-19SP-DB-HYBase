@@ -15,12 +15,13 @@ namespace HYBase.BufferManager
     }
     public class PagedFile
     {
-        private FileStream file;
+        private Stream file;
         private BufferManager bufferManager;
         private PagedFileHeader fileHeader;
         private bool headerChanged;
-        public PagedFile(FileStream f)
+        public PagedFile(Stream f)
         {
+
             var header = new byte[4096];
             file = f;
             file.Read(header, 0, 4096);

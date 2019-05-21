@@ -12,11 +12,11 @@ namespace HYBase.BufferManager
 {
     struct Key
     {
-        public FileStream file;
+        public Stream file;
         public int pageNum;
         public override int GetHashCode()
             => HashCode.Combine(file.GetHashCode(), pageNum.GetHashCode());
-        public static implicit operator Key((FileStream file, int pageNum) tuple)
+        public static implicit operator Key((Stream file, int pageNum) tuple)
         {
             var ret = new Key();
             ret.file = tuple.Item1;
@@ -40,7 +40,7 @@ namespace HYBase.BufferManager
                 free.AddFirst(n);
             }
         }
-        public PageData GetPage(FileStream file, int pageNum)
+        public PageData GetPage(Stream file, int pageNum)
             => hashTable.TryGetValue((file, pageNum)).BiBind<PageData>(Some: page => page.Value.page.page
                 , None: () =>
                 {
@@ -52,7 +52,7 @@ namespace HYBase.BufferManager
 
                 }).First();
 
-        public void MarkDirty(FileStream file, int pageNum)
+        public void MarkDirty(Stream file, int pageNum)
         {
             hashTable.TryGetValue<Key, LinkedListNode<(Key key, Page value)>>((file, pageNum)).IfSome(node =>
            {
@@ -64,7 +64,7 @@ namespace HYBase.BufferManager
                }
            });
         }
-        public void ForcePage(FileStream file, int pageNum)
+        public void ForcePage(Stream file, int pageNum)
         {
             hashTable.TryGetValue<Key, LinkedListNode<(Key key, Page value)>>((file, pageNum)).IfSome(node =>
            {
@@ -72,7 +72,7 @@ namespace HYBase.BufferManager
                WritePage(file, pageNum, node.Value.value.page);
            });
         }
-        public void UnPin(FileStream file, int pageNum)
+        public void UnPin(Stream file, int pageNum)
         {
             hashTable.TryGetValue<Key, LinkedListNode<(Key key, Page value)>>((file, pageNum)).IfSome(node =>
            {
@@ -85,7 +85,7 @@ namespace HYBase.BufferManager
                }
            });
         }
-        public void FlushPages(FileStream file)
+        public void FlushPages(Stream file)
         {
             foreach (var page in used)
             {
@@ -147,7 +147,7 @@ namespace HYBase.BufferManager
                 return used.AddFirst((new Key(), f.Value));
             }
         }
-        private void ReadPage(FileStream file, int pageNum, ref PageData data)
+        private void ReadPage(Stream file, int pageNum, ref PageData data)
         {
             int offset = pageNum * Page.SIZE + Page.SIZE;
             file.Seek(offset, SeekOrigin.Begin);
@@ -155,7 +155,7 @@ namespace HYBase.BufferManager
             file.Read(bytes, 0, Page.SIZE - sizeof(int));
             data = ByteArrayToStructure<PageData>(bytes);
         }
-        public void WritePage(FileStream file, int pageNum, PageData data)
+        public void WritePage(Stream file, int pageNum, PageData data)
         {
             int offset = pageNum * Page.SIZE + Page.SIZE;
             file.Seek(offset, SeekOrigin.Begin);
