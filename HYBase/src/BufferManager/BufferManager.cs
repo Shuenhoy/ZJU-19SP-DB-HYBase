@@ -75,6 +75,7 @@ namespace HYBase.BufferManager
                 {
                     page.Value.page.page = newPage;
                     page.Value.page.Dirty = true;
+                    page.Value.page.PinCount++;
                 }
                 , None: () =>
                 {

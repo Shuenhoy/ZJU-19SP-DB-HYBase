@@ -1,6 +1,6 @@
 namespace HYBase
 {
-    enum AttrType
+    public enum AttrType
     {
         Int, Float, String
     }

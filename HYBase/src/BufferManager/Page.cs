@@ -16,7 +16,14 @@ namespace HYBase.BufferManager
         public byte[] data;
 
     }
-
+    [StructLayout(LayoutKind.Explicit, Size = 4096)]
+    public struct PagedFileHeader
+    {
+        [FieldOffset(0)]
+        public int firstFree;
+        [FieldOffset(4)]
+        public int numPages;
+    }
     class BufferBlock
     {
         public bool Dirty;

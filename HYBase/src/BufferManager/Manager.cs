@@ -4,6 +4,9 @@ using static HYBase.Utils.Utils;
 
 namespace HYBase.BufferManager
 {
+    /// <summary>
+    /// 勇于创建分页文件
+    /// </summary>
     public class PagedFileManager
     {
         private BufferManager buffer;
@@ -11,6 +14,11 @@ namespace HYBase.BufferManager
         {
             buffer = new BufferManager(32);
         }
+        /// <summary>
+        /// 创建新的分页文件
+        /// </summary>
+        /// <param name="file">文件流</param>
+        /// <returns>创建好的分页文件</returns>
         public PagedFile CreateFile(Stream file)
         {
             PagedFileHeader header = new PagedFileHeader();
@@ -23,7 +31,11 @@ namespace HYBase.BufferManager
 
             return pfile;
         }
-
+        /// <summary>
+        /// 打开已有的分页文件
+        /// </summary>
+        /// <param name="file"></param>
+        /// <returns></returns>
         public PagedFile OpenFile(Stream file)
             => new PagedFile(file, buffer);
     }

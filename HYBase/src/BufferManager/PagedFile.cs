@@ -5,14 +5,9 @@ using static HYBase.Utils.Utils;
 
 namespace HYBase.BufferManager
 {
-    [StructLayout(LayoutKind.Explicit, Size = 4096)]
-    public struct PagedFileHeader
-    {
-        [FieldOffset(0)]
-        public int firstFree;
-        [FieldOffset(4)]
-        public int numPages;
-    }
+    /// <summary>
+    /// 分页文件
+    /// </summary>
     public class PagedFile
     {
         private Stream file;
@@ -34,25 +29,48 @@ namespace HYBase.BufferManager
             bufferManager = buffer;
             fileHeader = ByteArrayToStructure<PagedFileHeader>(header);
         }
+        /// <summary>
+        ///  设置分页文件某页的内容
+        /// </summary>
+        /// <param name="pageNum"></param>
+        /// <param name="data"></param>
         public void SetPageData(int pageNum, byte[] data)
         {
             bufferManager.SetPageData(file, pageNum, data);
         }
+        /// <summary>
+        /// 获取分页文件某页的内容
+        /// </summary>
+        /// <param name="pageNum"></param>
+        /// <returns></returns>
         public byte[] GetPageData(int pageNum)
             => bufferManager.GetPage(file, pageNum).data;
-
+        /// <summary>
+        /// 标记某页需要写入文件
+        /// </summary>
+        /// <param name="pageNum"></param>
         public void MarkDirty(int pageNum)
         {
             bufferManager.MarkDirty(file, pageNum);
         }
+        /// <summary>
+        /// 强制将所有文件写入文件
+        /// </summary>
         public void ForcePages()
         {
             bufferManager.ForcePages(file);
         }
+        /// <summary>
+        /// 将某页写入文件
+        /// </summary>
+        /// <param name="pageNum"></param>
         public void ForcePage(int pageNum)
         {
             bufferManager.ForcePage(file, pageNum);
         }
+        /// <summary>
+        ///  将文件头输出到文件
+        /// </summary>
         public void WriteHeader()
         {
             if (headerChanged)
@@ -62,11 +80,18 @@ namespace HYBase.BufferManager
                 headerChanged = false;
             }
         }
+        /// <summary>
+        /// 将所有没有被pin的文件写入文件，并从缓存移除
+        /// </summary>
         public void FlushPages()
         {
             WriteHeader();
             bufferManager.FlushPages(file);
         }
+        /// <summary>
+        /// 销毁某页
+        /// </summary>
+        /// <param name="pageNum"></param>
         public void DeallocatePage(int pageNum)
         {
             if (fileHeader.numPages > pageNum)
@@ -78,6 +103,10 @@ namespace HYBase.BufferManager
                 headerChanged = true;
             }
         }
+        /// <summary>
+        /// 分配一页数据
+        /// </summary>
+        /// <returns></returns>
         public int AllocatePage()
         {
             headerChanged = true;
@@ -100,6 +129,10 @@ namespace HYBase.BufferManager
 
             return pageNum;
         }
+        /// <summary>
+        /// 减少某页的pin的数量
+        /// </summary>
+        /// <param name="pageNum"></param>
         public void UnPin(int pageNum)
         {
             bufferManager.UnPin(file, pageNum);
