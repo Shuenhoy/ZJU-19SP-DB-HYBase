@@ -4,31 +4,32 @@ using System.Runtime.InteropServices;
 
 namespace HYBase.BufferManager
 {
-    [StructLayout(LayoutKind.Explicit, Size = 4096)]
+    [StructLayout(LayoutKind.Explicit, Size = 4096, Pack = 1)]
     struct PageData
     {
         [FieldOffset(0)]
-        [MarshalAs(UnmanagedType.I4)]
+
         public int nextFree;
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - sizeof(int))]
-        [FieldOffset(4)]
+
+        [FieldOffset(8)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - 8)]
         public byte[] data;
 
     }
 
-    class Page
+    class BufferBlock
     {
         public bool Dirty;
         public int PinCount;
         public PageData page;
         public const int SIZE = 4096;
         public const int HEADER_SIZE = sizeof(int);
-        public Page()
+        public BufferBlock()
         {
             Dirty = false;
             PinCount = 0;
             page = new PageData();
-            page.data = new byte[4096 - sizeof(int)];
+            page.data = new byte[4096 - 8];
         }
 
     }

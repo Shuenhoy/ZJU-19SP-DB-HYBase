@@ -6,7 +6,7 @@ using static HYBase.Utils.Utils;
 namespace HYBase.BufferManager
 {
     [StructLayout(LayoutKind.Explicit, Size = 4096)]
-    struct PagedFileHeader
+    public struct PagedFileHeader
     {
         [FieldOffset(0)]
         public int firstFree;
@@ -19,14 +19,24 @@ namespace HYBase.BufferManager
         private BufferManager bufferManager;
         private PagedFileHeader fileHeader;
         private bool headerChanged;
-        public PagedFile(Stream f)
+        public int PageNum
+        {
+            get => fileHeader.numPages;
+        }
+        internal PagedFile(Stream f, BufferManager buffer)
         {
 
             var header = new byte[4096];
             file = f;
+            file.Seek(0, SeekOrigin.Begin);
             file.Read(header, 0, 4096);
             headerChanged = false;
+            bufferManager = buffer;
             fileHeader = ByteArrayToStructure<PagedFileHeader>(header);
+        }
+        public void SetPageData(int pageNum, byte[] data)
+        {
+            bufferManager.SetPageData(file, pageNum, data);
         }
         public byte[] GetPageData(int pageNum)
             => bufferManager.GetPage(file, pageNum).data;
@@ -34,6 +44,10 @@ namespace HYBase.BufferManager
         public void MarkDirty(int pageNum)
         {
             bufferManager.MarkDirty(file, pageNum);
+        }
+        public void ForcePages()
+        {
+            bufferManager.ForcePages(file);
         }
         public void ForcePage(int pageNum)
         {
@@ -59,6 +73,7 @@ namespace HYBase.BufferManager
             {
                 var page = bufferManager.GetPage(file, pageNum);
                 page.nextFree = fileHeader.firstFree;
+                bufferManager.SetPage(file, pageNum, page);
                 fileHeader.firstFree = pageNum;
                 headerChanged = true;
             }
@@ -66,31 +81,32 @@ namespace HYBase.BufferManager
         public int AllocatePage()
         {
             headerChanged = true;
+            int pageNum;
+            var page = new PageData();
 
-            if (fileHeader.firstFree != -1)
+            if (fileHeader.firstFree == -1)
             {
-                int pNum = fileHeader.firstFree;
-                var page = bufferManager.GetPage(file, fileHeader.firstFree);
-                bufferManager.MarkDirty(file, fileHeader.firstFree);
-                fileHeader.firstFree = page.nextFree;
-                page.data = new byte[4096 - sizeof(int)];
-                return pNum;
+                pageNum = fileHeader.numPages;
+                fileHeader.numPages++;
             }
             else
             {
-
-                int newPageNum = fileHeader.numPages;
-                var page = new PageData();
-                page.nextFree = -1;
-                page.data = new byte[4096 - sizeof(int)];
-                fileHeader.numPages++;
-
-                return newPageNum;
+                pageNum = fileHeader.firstFree;
+                fileHeader.firstFree = bufferManager.GetPage(file, pageNum).nextFree;
             }
+            page.nextFree = -1;
+            page.data = new byte[4096 - 8];
+            bufferManager.SetPage(file, pageNum, page);
+
+            return pageNum;
         }
         public void UnPin(int pageNum)
         {
             bufferManager.UnPin(file, pageNum);
+        }
+        public void Close()
+        {
+            file.Close();
         }
 
     }
