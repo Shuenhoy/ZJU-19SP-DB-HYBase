@@ -6,7 +6,7 @@ namespace HYBase.RecordManager
 
     class RecordManager
     {
-        public RecordManager(BufferManager.BufferManager bufferManager)
+        public RecordManager(BufferManager.PagedFileManager pagedManager)
         {
             throw new NotImplementedException();
         }
@@ -20,9 +20,6 @@ namespace HYBase.RecordManager
         {
             throw new NotImplementedException();
         }
-        public RecordFile CloseFile(RecordFile file)
-        {
-            throw new NotImplementedException();
-        }
+
     }
 }

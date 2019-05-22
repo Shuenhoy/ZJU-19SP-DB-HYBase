@@ -21,7 +21,7 @@ namespace HYBase.RecordManager
     class FileScan
     {
         public FileScan() { throw new NotImplementedException(); }
-        void OpenScan<T>(Stream file,
+        void OpenScan<T>(RecordFile file,
             int attrLength,
             int attrOffset,
             CompOp compOp,
