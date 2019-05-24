@@ -9,6 +9,7 @@ namespace HYBase.Utils
         {
             fixed (byte* ptr = &bytes[0])
             {
+
                 return (T)Marshal.PtrToStructure((IntPtr)ptr, typeof(T));
             }
         }
