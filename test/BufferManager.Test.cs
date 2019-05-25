@@ -85,7 +85,7 @@ namespace HYBase.UnitTests
         }
 
         [Fact]
-        void ReadWriteTest()
+        void ReadWrite1Test()
         {
             MemoryStream m = new MemoryStream();
             PagedFile pf = pm.CreateFile(m);
@@ -122,6 +122,92 @@ namespace HYBase.UnitTests
 
             pf.ForcePages();
 
+            Assert.Equal(p3, GetPageFromStream(m, 0));
+            Assert.Equal(p1, GetPageFromStream(m, 1));
+            Assert.Equal(p2, GetPageFromStream(m, 2));
+
+        }
+        [Fact]
+        void ReadWrite2Test()
+        {
+            MemoryStream m = new MemoryStream();
+            PagedFile pf = pm.CreateFile(m);
+
+            int a1 = pf.AllocatePage();
+            int a2 = pf.AllocatePage();
+            int a3 = pf.AllocatePage();
+
+            Assert.Equal(0, pf.GetPinCount(a1));
+            Assert.Equal(0, pf.GetPinCount(a2));
+            Assert.Equal(0, pf.GetPinCount(a3));
+
+            Assert.True(pf.GetDirty(a1));
+            Assert.True(pf.GetDirty(a2));
+            Assert.True(pf.GetDirty(a3));
+
+            pf.ForcePages();
+            Assert.False(pf.GetDirty(a1));
+            Assert.False(pf.GetDirty(a2));
+            Assert.False(pf.GetDirty(a3));
+
+            var p1 = new TestPage(1, 2, 3);
+
+            var p2 = new TestPage(4, 5, 6);
+
+            var p3 = new TestPage(7, 8, 9);
+
+            pf.SetPageData(a1, StructureToByteArray(p1));
+            pf.SetPageData(a2, StructureToByteArray(p2));
+            pf.SetPageData(a3, StructureToByteArray(p3));
+
+            Assert.True(pf.GetDirty(a1));
+            Assert.True(pf.GetDirty(a2));
+            Assert.True(pf.GetDirty(a3));
+
+            Assert.Equal(p1, ByteArrayToStructure<TestPage>(pf.GetPageData(a1)));
+            Assert.Equal(p2, ByteArrayToStructure<TestPage>(pf.GetPageData(a2)));
+            Assert.Equal(p3, ByteArrayToStructure<TestPage>(pf.GetPageData(a3)));
+            pf.UnPin(a1);
+            pf.UnPin(a2);
+            pf.UnPin(a3);
+
+            pf.ForcePages();
+            Assert.Equal(p1, GetPageFromStream(m, 0));
+            Assert.Equal(p2, GetPageFromStream(m, 1));
+            Assert.Equal(p3, GetPageFromStream(m, 2));
+
+            var d1 = pf.GetPageData(a1);
+            var d2 = pf.GetPageData(a2);
+            var d3 = pf.GetPageData(a3);
+
+            Assert.Equal(1, pf.GetPinCount(a1));
+            Assert.Equal(1, pf.GetPinCount(a2));
+            Assert.Equal(1, pf.GetPinCount(a3));
+
+
+            StructureToByteArray(p3).CopyTo(d1, 0);
+            StructureToByteArray(p1).CopyTo(d2, 0);
+            StructureToByteArray(p2).CopyTo(d3, 0);
+
+            Assert.Equal(p1, GetPageFromStream(m, 0));
+            Assert.Equal(p2, GetPageFromStream(m, 1));
+            Assert.Equal(p3, GetPageFromStream(m, 2));
+
+            pf.ForcePages();
+
+            Assert.Equal(p1, GetPageFromStream(m, 0));
+            Assert.Equal(p2, GetPageFromStream(m, 1));
+            Assert.Equal(p3, GetPageFromStream(m, 2));
+
+            pf.MarkDirty(a1);
+            pf.MarkDirty(a2);
+            pf.MarkDirty(a3);
+
+            Assert.True(pf.GetDirty(a1));
+            Assert.True(pf.GetDirty(a2));
+            Assert.True(pf.GetDirty(a3));
+
+            pf.ForcePages();
             Assert.Equal(p3, GetPageFromStream(m, 0));
             Assert.Equal(p1, GetPageFromStream(m, 1));
             Assert.Equal(p2, GetPageFromStream(m, 2));

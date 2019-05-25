@@ -7,7 +7,9 @@ using static HYBase.Utils.Utils;
 using System;
 using System.Diagnostics;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
+[assembly: InternalsVisibleTo("test")]
 namespace HYBase.BufferManager
 {
     class Key
@@ -52,9 +54,23 @@ namespace HYBase.BufferManager
                 free.AddFirst(n);
             }
         }
+        internal bool GetDirty(Stream file, int pageNum)
+            => hashTable.TryGetValue((file, pageNum)).BiBind<bool>(
+                    Some: page => page.Value.page.Dirty
+                  , None: () =>
+                false).First();
+        internal int GetPinCount(Stream file, int pageNum)
+            => hashTable.TryGetValue((file, pageNum)).BiBind<int>(
+                    Some: page => page.Value.page.PinCount
+                  , None: () =>
+                0).First();
         public PageData GetPage(Stream file, int pageNum)
             => hashTable.TryGetValue((file, pageNum)).BiBind<PageData>(
-                    Some: page => page.Value.page.page
+                    Some: page =>
+                    {
+                        page.Value.page.PinCount++;
+                        return page.Value.page.page;
+                    }
                 , None: () =>
                 {
                     var node = InternalAlloc();
@@ -63,7 +79,7 @@ namespace HYBase.BufferManager
                     node.Value.key.file = file;
                     node.Value.key.pageNum = pageNum;
 
-                    node.Value.value.PinCount = 1;
+                    node.Value.value.PinCount = 0;
                     node.Value.value.Dirty = false;
                     return node.Value.value.page;
 
@@ -75,7 +91,6 @@ namespace HYBase.BufferManager
                 {
                     page.Value.page.page = newPage;
                     page.Value.page.Dirty = true;
-                    page.Value.page.PinCount++;
                 }
                 , None: () =>
                 {
@@ -86,7 +101,7 @@ namespace HYBase.BufferManager
                     node.Value.key.file = file;
                     node.Value.key.pageNum = pageNum;
 
-                    node.Value.value.PinCount = 1;
+                    node.Value.value.PinCount = 0;
                     node.Value.value.Dirty = true;
 
 
@@ -108,7 +123,6 @@ namespace HYBase.BufferManager
                     node.Value.key.file = file;
                     node.Value.key.pageNum = pageNum;
 
-                    node.Value.value.PinCount = 1;
                     node.Value.value.Dirty = true;
 
 
@@ -143,6 +157,7 @@ namespace HYBase.BufferManager
                     if (page.value.Dirty)
                     {
                         WritePage(file, page.key.pageNum, page.value.page);
+                        page.value.Dirty = false;
                     }
                 }
 

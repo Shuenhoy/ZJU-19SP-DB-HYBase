@@ -45,6 +45,11 @@ namespace HYBase.BufferManager
         /// <returns></returns>
         public byte[] GetPageData(int pageNum)
             => bufferManager.GetPage(file, pageNum).data;
+        internal bool GetDirty(int pageNum)
+            => bufferManager.GetDirty(file, pageNum);
+        internal int GetPinCount(int pageNum)
+            => bufferManager.GetPinCount(file, pageNum);
+
         /// <summary>
         /// 标记某页需要写入文件
         /// </summary>
