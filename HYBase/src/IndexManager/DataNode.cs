@@ -14,8 +14,10 @@ namespace HYBase.IndexManager
         public int AttributeLength;
     }
 
-    internal struct DataNode
+    internal struct LeafNode
     {
+        internal int pageNum;
+
         public int Father;
         public int Prev;
         public int Next;
@@ -38,7 +40,7 @@ namespace HYBase.IndexManager
                 return false;
             }
 
-            var other = (DataNode)obj;
+            var other = (LeafNode)obj;
             return Father == other.Father && Prev == other.Prev
                 && Next == other.Next
                 && Enumerable.SequenceEqual(Data, other.Data);
@@ -65,7 +67,7 @@ namespace HYBase.IndexManager
             sizeCounts -= sizeCounts % 4;
             return sizeCounts;
         }
-        public static byte[] ToByteArray(DataNode node, int attributeLength, byte[] ret)
+        public static byte[] ToByteArray(LeafNode node, int attributeLength, byte[] ret)
         {
             Debug.Assert(node.Valid.Length == node.Data.Length / attributeLength);
             Debug.Assert(node.Valid.Length % 4 == 0 && node.Valid.Length * (1 + attributeLength * 4) < 4060 * 4);
@@ -79,16 +81,16 @@ namespace HYBase.IndexManager
             Buffer.BlockCopy(node.Data, 0, ret, 16 + sizeCounts / 4, sizeCounts * attributeLength);
             return ret;
         }
-        public static DataNode AllocateEmpty(int attributeLength)
+        public static LeafNode AllocateEmpty(int attributeLength)
         {
-            DataNode node = new DataNode();
+            LeafNode node = new LeafNode();
             int sizeCounts = GetSizeCounts(attributeLength);
             node.Valid = new bool[sizeCounts];
             node.Data = new byte[sizeCounts * attributeLength];
 
             return node;
         }
-        public static DataNode FromByteArray(byte[] bytes, int attributeLength, ref DataNode node)
+        public static LeafNode FromByteArray(byte[] bytes, int attributeLength, ref LeafNode node)
         {
             int sizeCounts = GetSizeCounts(attributeLength);
             sizeCounts -= sizeCounts % 4; // clamp to 4s
@@ -105,10 +107,12 @@ namespace HYBase.IndexManager
 
             return node;
         }
+
     }
 
     internal struct InternalNode
     {
+        internal int pageNum;
         public int Father;
         public int ChildrenNumber;
 
@@ -134,7 +138,14 @@ namespace HYBase.IndexManager
                 && Enumerable.SequenceEqual(Children, other.Children)
                 && Enumerable.SequenceEqual(Values, other.Values);
         }
-
+        public void WriteBack(int attributeLength)
+        {
+            ToByteArray(this, attributeLength, Raw);
+        }
+        public void ReSync(int attributeLength)
+        {
+            FromByteArray(Raw, attributeLength, ref this);
+        }
         // override object.GetHashCode
         public override int GetHashCode()
         {

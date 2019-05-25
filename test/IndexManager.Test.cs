@@ -9,12 +9,12 @@ namespace HYBase.UnitTests
     public class IndexFileTest
     {
         [Fact]
-        void DataNodeMarshalTest()
+        void LeafNodeMarshalTest()
         {
             const int attributeLength = 4;
             const int sizeCounts0 = 4060 * 4 / (1 + attributeLength * 4);
             const int sizeCounts = sizeCounts0 - sizeCounts0 % 4;
-            DataNode node = new DataNode();
+            LeafNode node = new LeafNode();
             node.Father = 1;
             node.Prev = 3;
             node.Next = 5;
@@ -26,8 +26,8 @@ namespace HYBase.UnitTests
             node.Valid[2] = false;
             node.Valid[3] = true;
             Buffer.BlockCopy(new int[] { 1, 8, 4, 2 }, 0, node.Data, 0, 16);
-            var tmp = DataNode.AllocateEmpty(attributeLength);
-            Assert.Equal(node, DataNode.FromByteArray(DataNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
+            var tmp = LeafNode.AllocateEmpty(attributeLength);
+            Assert.Equal(node, LeafNode.FromByteArray(LeafNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
         }
 
         [Fact]

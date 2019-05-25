@@ -108,6 +108,14 @@ namespace HYBase.BufferManager
                 headerChanged = true;
             }
         }
+        public void DeallocatePages()
+        {
+
+            fileHeader.firstFree = -1;
+            fileHeader.numPages = 0;
+            headerChanged = true;
+
+        }
         /// <summary>
         /// 分配一页数据
         /// </summary>
