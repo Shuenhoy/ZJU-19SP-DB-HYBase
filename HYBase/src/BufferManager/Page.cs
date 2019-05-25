@@ -36,6 +36,7 @@ namespace HYBase.BufferManager
             Dirty = false;
             PinCount = 0;
             page = new PageData();
+            page.nextFree = -1;
             page.data = new byte[4096 - 8];
         }
 

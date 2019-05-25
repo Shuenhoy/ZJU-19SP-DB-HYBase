@@ -116,7 +116,7 @@ namespace HYBase.BufferManager
         {
             headerChanged = true;
             int pageNum;
-            var page = new PageData();
+            //var page = new PageData();
 
             if (fileHeader.firstFree == -1)
             {
@@ -126,12 +126,13 @@ namespace HYBase.BufferManager
             else
             {
                 pageNum = fileHeader.firstFree;
-                fileHeader.firstFree = bufferManager.GetPage(file, pageNum).nextFree;
             }
+            var page = bufferManager.GetPage(file, pageNum);
+            fileHeader.firstFree = fileHeader.firstFree == -1 ? -1 : page.nextFree;
             page.nextFree = -1;
-            page.data = new byte[4096 - 8];
-            bufferManager.SetPage(file, pageNum, page);
-
+            Array.Clear(page.data, 0, page.data.Length);
+            MarkDirty(pageNum);
+            UnPin(pageNum);
             return pageNum;
         }
         /// <summary>

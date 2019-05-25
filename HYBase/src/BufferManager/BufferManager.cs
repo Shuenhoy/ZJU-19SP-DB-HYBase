@@ -79,7 +79,7 @@ namespace HYBase.BufferManager
                     node.Value.key.file = file;
                     node.Value.key.pageNum = pageNum;
 
-                    node.Value.value.PinCount = 0;
+                    node.Value.value.PinCount = 1;
                     node.Value.value.Dirty = false;
                     return node.Value.value.page;
 

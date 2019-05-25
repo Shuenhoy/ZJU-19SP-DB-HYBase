@@ -141,6 +141,11 @@ namespace HYBase.UnitTests
             Assert.Equal(0, pf.GetPinCount(a2));
             Assert.Equal(0, pf.GetPinCount(a3));
 
+
+            Assert.Equal(0, a1);
+            Assert.Equal(1, a2);
+            Assert.Equal(2, a3);
+
             Assert.True(pf.GetDirty(a1));
             Assert.True(pf.GetDirty(a2));
             Assert.True(pf.GetDirty(a3));
