@@ -1,0 +1,132 @@
+===============================================================================
+EXTENSION NAME : linecounter
+EXTENSION VERSION : 0.2.2
+-------------------------------------------------------------------------------
+count time : 2019-05-25 10:11:36
+count workspace : /home/shr/codes/courses/ZJU-19SP-DB-MiniSQL
+total files : 105
+total code lines : 16607
+total comment lines : 221
+total blank lines : 419
+
+    statistics
+   |      extension|     total code|  total comment|    total blank|percent|
+   -------------------------------------------------------------------------
+   |               |            198|            112|             44|    1.2|
+   |            .md|              4|              0|              2|  0.024|
+   |           .sln|             48|              0|              0|   0.29|
+   |        .csproj|             28|              0|              4|   0.17|
+   |            .cs|           1168|            109|            159|    7.0|
+   |       .targets|             43|              0|              0|   0.26|
+   |         .cache|             27|              0|              0|   0.16|
+   |         .props|             80|              0|              0|   0.48|
+   |          .json|          14983|              0|            210|     90|
+   |           .txt|             28|              0|              0|   0.17|
+   |  .CopyComplete|              0|              0|              0|    0.0|
+   -------------------------------------------------------------------------
+.gitignore, code is 99, comment is 56, blank is 22.
+HYBase.sln, code is 48, comment is 0, blank is 0.
+HYBase/.gitignore, code is 99, comment is 56, blank is 22.
+HYBase/bin/Debug/netcoreapp2.2/HYBase.deps.json, code is 475, comment is 0, blank is 0.
+HYBase/bin/Debug/netcoreapp2.2/HYBase.dll, it is a binary file.
+HYBase/bin/Debug/netcoreapp2.2/HYBase.pdb, it is a binary file.
+HYBase/bin/Debug/netcoreapp2.2/HYBase.runtimeconfig.dev.json, code is 8, comment is 0, blank is 1.
+HYBase/bin/Debug/netcoreapp2.2/HYBase.runtimeconfig.json, code is 9, comment is 0, blank is 0.
+HYBase/HYBase.csproj, code is 13, comment is 0, blank is 3.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.assets.cache, it is a binary file.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.csproj.CoreCompileInputs.cache, code is 1, comment is 0, blank is 0.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.csproj.FileListAbsolute.txt, code is 9, comment is 0, blank is 0.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.csprojAssemblyReference.cache, it is a binary file.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.dll, it is a binary file.
+HYBase/obj/Debug/netcoreapp2.2/HYBase.pdb, it is a binary file.
+HYBase/obj/HYBase.csproj.nuget.cache, code is 5, comment is 0, blank is 0.
+HYBase/obj/HYBase.csproj.nuget.dgspec.json, code is 61, comment is 0, blank is 5.
+HYBase/obj/HYBase.csproj.nuget.g.props, code is 18, comment is 0, blank is 0.
+HYBase/obj/HYBase.csproj.nuget.g.targets, code is 10, comment is 0, blank is 0.
+HYBase/obj/project.assets.json, code is 2975, comment is 0, blank is 44.
+HYBase/src/AttrTyype.cs, code is 7, comment is 0, blank is 0.
+HYBase/src/BufferManager/BufferManager.cs, code is 240, comment is 0, blank is 18.
+HYBase/src/BufferManager/Manager.cs, code is 25, comment is 13, blank is 4.
+HYBase/src/BufferManager/Page.cs, code is 39, comment is 0, blank is 5.
+HYBase/src/BufferManager/PagedFile.cs, code is 104, comment is 43, blank is 5.
+HYBase/src/CatalogManager/AttributeInfo.cs, code is 11, comment is 0, blank is 2.
+HYBase/src/CatalogManager/Catalog.cs, code is 24, comment is 0, blank is 3.
+HYBase/src/CatalogManager/Manager.cs, code is 28, comment is 4, blank is 2.
+HYBase/src/IndexManager/DataNode.cs, code is 164, comment is 4, blank is 23.
+HYBase/src/IndexManager/Index.cs, code is 27, comment is 0, blank is 2.
+HYBase/src/IndexManager/IndexScan.cs, code is 20, comment is 0, blank is 1.
+HYBase/src/IndexManager/Manager.cs, code is 20, comment is 0, blank is 3.
+HYBase/src/Program.cs, code is 11, comment is 0, blank is 1.
+HYBase/src/RecordManager/FileScan.cs, code is 30, comment is 12, blank is 3.
+HYBase/src/RecordManager/Manager.cs, code is 24, comment is 3, blank is 3.
+HYBase/src/RecordManager/Record.cs, code is 11, comment is 0, blank is 2.
+HYBase/src/RecordManager/RecordFile.cs, code is 33, comment is 0, blank is 5.
+HYBase/src/RecordManager/rid.cs, code is 10, comment is 0, blank is 1.
+HYBase/src/System/System.cs, code is 12, comment is 0, blank is 2.
+HYBase/src/Utils/AggregateWhile.cs, code is 22, comment is 0, blank is 3.
+HYBase/src/Utils/ByteToStrruct.cs, code is 25, comment is 0, blank is 3.
+obj/Debug/netcoreapp2.2/HYBase.AssemblyInfo.cs, code is 9, comment is 10, blank is 4.
+obj/Debug/netcoreapp2.2/HYBase.AssemblyInfoInputs.cache, code is 1, comment is 0, blank is 0.
+obj/Debug/netcoreapp2.2/HYBase.assets.cache, it is a binary file.
+obj/Debug/netcoreapp2.2/HYBase.csproj.CoreCompileInputs.cache, code is 1, comment is 0, blank is 0.
+obj/Debug/netcoreapp2.2/HYBase.csproj.FileListAbsolute.txt, code is 4, comment is 0, blank is 0.
+obj/Debug/netcoreapp2.2/HYBase.csprojAssemblyReference.cache, it is a binary file.
+obj/Debug/netcoreapp2.2/MiniSQL.AssemblyInfo.cs, code is 9, comment is 10, blank is 4.
+obj/Debug/netcoreapp2.2/MiniSQL.AssemblyInfoInputs.cache, code is 1, comment is 0, blank is 0.
+obj/Debug/netcoreapp2.2/MiniSQL.assets.cache, it is a binary file.
+obj/Debug/netcoreapp2.2/MiniSQL.csproj.CoreCompileInputs.cache, code is 1, comment is 0, blank is 0.
+obj/Debug/netcoreapp2.2/MiniSQL.csprojAssemblyReference.cache, it is a binary file.
+obj/HYBase.csproj.nuget.cache, code is 5, comment is 0, blank is 0.
+obj/HYBase.csproj.nuget.dgspec.json, code is 61, comment is 0, blank is 5.
+obj/HYBase.csproj.nuget.g.props, code is 18, comment is 0, blank is 0.
+obj/HYBase.csproj.nuget.g.targets, code is 10, comment is 0, blank is 0.
+obj/MiniSQL.csproj.nuget.cache, code is 5, comment is 0, blank is 0.
+obj/MiniSQL.csproj.nuget.dgspec.json, code is 61, comment is 0, blank is 5.
+obj/MiniSQL.csproj.nuget.g.props, code is 18, comment is 0, blank is 0.
+obj/MiniSQL.csproj.nuget.g.targets, code is 10, comment is 0, blank is 0.
+obj/project.assets.json, code is 2975, comment is 0, blank is 44.
+README.md, code is 4, comment is 0, blank is 2.
+test/bin/Debug/netcoreapp2.2/HYBase.dll, it is a binary file.
+test/bin/Debug/netcoreapp2.2/HYBase.pdb, it is a binary file.
+test/bin/Debug/netcoreapp2.2/test.deps.json, code is 1692, comment is 0, blank is 0.
+test/bin/Debug/netcoreapp2.2/test.dll, it is a binary file.
+test/bin/Debug/netcoreapp2.2/test.pdb, it is a binary file.
+test/bin/Debug/netcoreapp2.2/test.runtimeconfig.dev.json, code is 8, comment is 0, blank is 1.
+test/bin/Debug/netcoreapp2.2/test.runtimeconfig.json, code is 9, comment is 0, blank is 0.
+test/bin/Debug/netcoreapp2.2/xunit.runner.reporters.netstandard15.dll, it is a binary file.
+test/bin/Debug/netcoreapp2.2/xunit.runner.utility.netstandard15.dll, it is a binary file.
+test/bin/Debug/netcoreapp2.2/xunit.runner.visualstudio.dotnetcore.testadapter.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/test.deps.json, code is 172, comment is 0, blank is 0.
+test/bin/Debug/netstandard2.0/publish/test.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/test.pdb, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.abstractions.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.assert.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.core.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.execution.dotnet.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.runner.utility.net35.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/publish/xunit.runner.visualstudio.testadapter.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/test.deps.json, code is 172, comment is 0, blank is 0.
+test/bin/Debug/netstandard2.0/test.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/test.pdb, it is a binary file.
+test/bin/Debug/netstandard2.0/xunit.abstractions.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/xunit.runner.utility.net35.dll, it is a binary file.
+test/bin/Debug/netstandard2.0/xunit.runner.visualstudio.testadapter.dll, it is a binary file.
+test/BufferManager.Test.cs, code is 193, comment is 0, blank is 48.
+test/IndexManager.Test.cs, code is 56, comment is 0, blank is 8.
+test/obj/Debug/netcoreapp2.2/test.AssemblyInfo.cs, code is 9, comment is 10, blank is 4.
+test/obj/Debug/netcoreapp2.2/test.AssemblyInfoInputs.cache, code is 1, comment is 0, blank is 0.
+test/obj/Debug/netcoreapp2.2/test.assets.cache, it is a binary file.
+test/obj/Debug/netcoreapp2.2/test.csproj.CopyComplete, code is 0, comment is 0, blank is 0.
+test/obj/Debug/netcoreapp2.2/test.csproj.CoreCompileInputs.cache, code is 1, comment is 0, blank is 0.
+test/obj/Debug/netcoreapp2.2/test.csproj.FileListAbsolute.txt, code is 15, comment is 0, blank is 0.
+test/obj/Debug/netcoreapp2.2/test.csprojAssemblyReference.cache, it is a binary file.
+test/obj/Debug/netcoreapp2.2/test.dll, it is a binary file.
+test/obj/Debug/netcoreapp2.2/test.pdb, it is a binary file.
+test/obj/Debug/netcoreapp2.2/test.Program.cs, code is 5, comment is 0, blank is 0.
+test/obj/project.assets.json, code is 6183, comment is 0, blank is 95.
+test/obj/test.csproj.nuget.cache, code is 5, comment is 0, blank is 0.
+test/obj/test.csproj.nuget.dgspec.json, code is 122, comment is 0, blank is 10.
+test/obj/test.csproj.nuget.g.props, code is 26, comment is 0, blank is 0.
+test/obj/test.csproj.nuget.g.targets, code is 13, comment is 0, blank is 0.
+test/test.csproj, code is 15, comment is 0, blank is 1.
+===============================================================================

@@ -26,7 +26,8 @@ namespace HYBase.UnitTests
             node.Valid[2] = false;
             node.Valid[3] = true;
             Buffer.BlockCopy(new int[] { 1, 8, 4, 2 }, 0, node.Data, 0, 16);
-            Assert.Equal(node, DataNode.FromByteArray(DataNode.ToByteArray(node, attributeLength), attributeLength));
+            var tmp = DataNode.AllocateEmpty(attributeLength);
+            Assert.Equal(node, DataNode.FromByteArray(DataNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
         }
 
         [Fact]
@@ -35,7 +36,7 @@ namespace HYBase.UnitTests
             const int attributeLength = 4;
             const int sizeCounts0 = 4086 * 4 / (1 + 4 * 4 + attributeLength * 4);
             const int sizeCounts = sizeCounts0 - sizeCounts0 % 4;
-            InternalNode node;
+            InternalNode node = new InternalNode();
 
             node.Father = -1;
             node.ChildrenNumber = 4;
@@ -56,8 +57,8 @@ namespace HYBase.UnitTests
             node.Values = new byte[sizeCounts * 4];
 
             Buffer.BlockCopy(new int[] { 1, 8, 4, 2 }, 0, node.Values, 0, 16);
-
-            Assert.Equal(node, InternalNode.FromByteArray(InternalNode.ToByteArray(node, attributeLength), attributeLength));
+            var tmp = InternalNode.AllocateEmpty(attributeLength);
+            Assert.Equal(node, InternalNode.FromByteArray(InternalNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
         }
     }
 }

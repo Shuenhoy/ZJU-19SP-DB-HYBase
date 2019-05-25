@@ -11,7 +11,8 @@ namespace HYBase.IndexManager
         internal PagedFile file;
         InternalNode GetInternalNode(int id)
         {
-            return InternalNode.FromByteArray(file.GetPageData(id), fileHeader.AttributeLength);
+            throw new NotImplementedException();
+            // return InternalNode.FromByteArray(file.GetPageData(id), fileHeader.AttributeLength);
         }
         public void InsertEntry(byte[] data, RID rid)
         {
