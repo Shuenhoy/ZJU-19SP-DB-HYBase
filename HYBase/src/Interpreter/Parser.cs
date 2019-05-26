@@ -43,7 +43,8 @@ namespace HYBase.Interpreter
                 select $"char({length})";
         internal static Parser<string> type =
            choice(str("int"), str("float"), charType);
-
+        internal static Parser<Unit> eoc =
+            (from _ in chain(spaces, discard(ch(';'))) select unit).label("';'");
         internal static Parser<(string colName, string type, bool unique)> createTableColumns =
                 from name in identifier.label("column name")
                 from _0 in spaces1
@@ -66,10 +67,17 @@ namespace HYBase.Interpreter
                 from primary in identifier.label("primary key name")
                 from _9 in spaces
                 from _10 in ch(')')
+                from _11 in spaces
+                from _12 in ch(')')
+
+                from _eoc in eoc
+
                 select new CreateTable(tableName, columns.ToArr(), primary) as Command;
         internal static Parser<Command> dropTable =
                 from _0 in keywords("drop", "table")
                 from tableName in identifier.label("table name")
+                from _eoc in eoc
+
                 select new DropTable(tableName) as Command;
 
         internal static Parser<Command> createIndex =
@@ -82,24 +90,29 @@ namespace HYBase.Interpreter
                 from tableName in identifier.label("table name")
                 from _4 in spaces
                 from _5 in ch('(')
+                from _55 in spaces
                 from columnName in identifier.label("columnName")
                 from _6 in spaces
                 from _7 in ch(')')
+                from _eoc in eoc
+
                 select new CreateIndex(indexName, tableName, columnName) as Command;
 
         internal static Parser<Command> dropIndex =
             from _0 in keywords("drop", "index")
             from indexName in identifier.label("index name")
+            from _eoc in eoc
+
             select new DropIndex(indexName) as Command;
 
         internal static Parser<CompOp> op =
             choice(
-                from _ in ch('=') select CompOp.EQ,
-                from _ in str(">=") select CompOp.GE,
-                from _ in ch('>') select CompOp.GT,
-                from _ in str("<=") select CompOp.LE,
-                from _ in str("<") select CompOp.LT,
-                from _ in str("<>") select CompOp.NE);
+                attempt(from _ in ch('=') select CompOp.EQ),
+                attempt(from _ in str(">=") select CompOp.GE),
+                attempt(from _ in ch('>') select CompOp.GT),
+                attempt(from _ in str("<=") select CompOp.LE),
+                attempt(from _ in str("<") select CompOp.LT),
+                attempt(from _ in str("<>") select CompOp.NE));
         internal static Parser<object> intLit =
             from d in asString(many1(digit))
             select Int32.Parse(d) as object;
@@ -111,7 +124,7 @@ namespace HYBase.Interpreter
 
         internal static Parser<object> strLit =
             from _0 in ch('\'')
-            from x in asString(many(choice(noneOf("\'"), from _1 in ch('\'') select '\'')))
+            from x in asString(many(choice(from _1 in chain(ch('\\'), ch('\'')) select '\'', noneOf("\'"))))
             from _1 in ch('\'')
             select x as object;
 
@@ -136,11 +149,13 @@ namespace HYBase.Interpreter
             from conditions in optional(
                 from _1 in spaces1
                 from _2 in keywords("where")
-                from conds in many(from c in cond from _3 in spaces1 from _4 in keywords("and") select c)
+                from conds in many(attempt(from c in cond from _3 in spaces1 from _4 in keywords("and") select c))
                 from condn in cond
 
                 select conds.Add(condn)
             )
+            from _eoc in eoc
+
             select new Select(tableName, conditions.IsSome ? conditions.First().ToArr() : Arr.empty<Condition>()) as Command;
 
         internal static Parser<Command> insert =
@@ -149,10 +164,11 @@ namespace HYBase.Interpreter
             from _1 in spaces1
             from _2 in keywords0("values")
             from _3 in ch('(')
-            from values in many(from c in value from _3 in spaces1 from _4 in keywords(",") select c)
+            from values in many(attempt(from c in value from _3 in spaces from _4 in keywords0(",") select c))
             from valuen in value
-
+            from _4 in spaces
             from _31 in ch(')')
+            from _eoc in eoc
 
             select new Insert(tableName, values.Add(valuen).ToArr()) as Command;
 
@@ -162,20 +178,26 @@ namespace HYBase.Interpreter
             from conditions in optional(
                 from _1 in spaces1
                 from _2 in keywords("where")
-                from conds in many(from c in cond from _3 in spaces1 from _4 in keywords("and") select c)
+                from conds in many(attempt(from c in cond from _3 in spaces1 from _4 in keywords("and") select c))
                 from condn in cond
 
                 select conds.Add(condn)
             )
+            from _eoc in eoc
+
             select new Delete(tableName, conditions.IsSome ? conditions.First().ToArr() : Arr.empty<Condition>()) as Command;
 
         internal static Parser<Command> quit =
             from _0 in str("quit")
+            from _eoc in eoc
+
             select new Quit() as Command;
 
         internal static Parser<Command> execfile =
             from _0 in keywords("execfile")
             from file in asString(many(noneOf(";")))
+            from _eoc in eoc
+
             select new ExecFile(file) as Command;
     }
 }
