@@ -118,8 +118,8 @@ namespace HYBase.Interpreter
     class Select : Command
     {
         public readonly string TableName;
-        public readonly Condition[] Conditions;
-        public Select(string tableName, Condition[] conditions)
+        public readonly Arr<Condition> Conditions;
+        public Select(string tableName, Arr<Condition> conditions)
             => (TableName, Conditions) = (tableName, conditions);
         public override bool Equals(object obj)
         {
@@ -133,15 +133,15 @@ namespace HYBase.Interpreter
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(TableName.GetHashCode(), ArrayHashCode(Conditions));
+            return HashCode.Combine(TableName.GetHashCode(), Conditions.GetHashCode());
         }
     }
 
     class Insert : Command
     {
         public readonly string TableName;
-        public readonly object[] Values;
-        public Insert(string tableName, object[] values)
+        public readonly Arr<object> Values;
+        public Insert(string tableName, Arr<object> values)
             => (TableName, Values) = (tableName, values);
         public override bool Equals(object obj)
         {
@@ -155,15 +155,15 @@ namespace HYBase.Interpreter
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(TableName.GetHashCode(), ArrayHashCode(Values));
+            return HashCode.Combine(TableName.GetHashCode(), Values.ToArr());
         }
     }
 
     class Delete : Command
     {
         public readonly string TableName;
-        public readonly Condition[] Conditions;
-        public Delete(string tableName, Condition[] conditions)
+        public readonly Arr<Condition> Conditions;
+        public Delete(string tableName, Arr<Condition> conditions)
             => (TableName, Conditions) = (tableName, conditions);
 
         public override bool Equals(object obj)
@@ -178,7 +178,7 @@ namespace HYBase.Interpreter
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(TableName.GetHashCode(), ArrayHashCode(Conditions));
+            return HashCode.Combine(TableName.GetHashCode(), Conditions.GetHashCode());
         }
     }
 
