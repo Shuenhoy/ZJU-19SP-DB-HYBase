@@ -3,6 +3,7 @@ using HYBase.RecordManager;
 using System.Linq;
 using System.Collections.Generic;
 using static HYBase.Utils.Utils;
+using LanguageExt;
 
 namespace HYBase.Interpreter
 {
@@ -10,9 +11,10 @@ namespace HYBase.Interpreter
     class CreateTable : Command
     {
         public readonly string TableName;
-        public readonly (string colName, string type, bool unique)[] Columns;
-        public CreateTable(string tableName, (string colName, string type, bool unique)[] columns)
-            => (TableName, Columns) = (tableName, columns);
+        public readonly Arr<(string colName, string type, bool unique)> Columns;
+        public readonly string Primary;
+        public CreateTable(string tableName, Arr<(string colName, string type, bool unique)> columns, string primary)
+            => (TableName, Columns, Primary) = (tableName, columns, primary);
         public override bool Equals(object obj)
         {
             if (obj == null || GetType() != obj.GetType())
@@ -20,12 +22,12 @@ namespace HYBase.Interpreter
                 return false;
             }
             CreateTable other = (CreateTable)obj;
-            return TableName == other.TableName && Enumerable.SequenceEqual(Columns, other.Columns);
+            return TableName == other.TableName && Enumerable.SequenceEqual(Columns, other.Columns) && Primary == other.Primary;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(TableName.GetHashCode(), ArrayHashCode(Columns));
+            return HashCode.Combine(TableName.GetHashCode(), Columns.GetHashCode(), Primary.GetHashCode());
         }
     }
     class DropTable : Command
