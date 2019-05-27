@@ -5,7 +5,7 @@ namespace HYBase.IndexManager
 {
     public class IndexScan
     {
-        void OpenScan(Index index, CompOp compOp, byte[] value)
+        void OpenScan(Index index, CompOp compOp, object value)
         {
             throw new NotImplementedException();
         }

@@ -25,6 +25,7 @@ namespace HYBase.IndexManager
 
         public bool[] Valid;
         public byte[] Data;
+        // TODO: Add RID
         internal byte[] Raw;
 
         public override String ToString()
