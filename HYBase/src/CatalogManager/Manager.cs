@@ -12,14 +12,28 @@ namespace HYBase.CatalogManager
     /// </summary>
     class CatalogManager
     {
-        RecordFile relCatalog, attrCatalog;
+        RecordFile relCatalog, attrCatalog, indexCatalog;
         FileScan scan;
 
-        public CatalogManager(RecordManager.RecordManager rm, Stream relcat, Stream attrcat)
+        public CatalogManager(RecordManager.RecordManager rm, Stream relcat, Stream attrcat, Stream indexcat)
         {
             relCatalog = rm.OpenFile(relcat);
             attrCatalog = rm.OpenFile(attrcat);
+            indexCatalog = rm.OpenFile(indexcat);
             scan = new RecordManager.FileScan();
+        }
+        public int CreateIndex(String tableName, String columnName, String indexName)
+        {
+            var catalog = new IndexCatalog
+            {
+                relationName = tableName,
+                attributeName = columnName,
+                indexName = indexName,
+                indexID = indexCatalog.IncreaseKey()
+            };
+            indexCatalog.InsertRec(StructureToByteArray(catalog));
+
+            return catalog.indexID;
         }
         public void CreateTable(String tableName, AttributeInfo[] attributes)
         {

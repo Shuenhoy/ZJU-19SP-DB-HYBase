@@ -5,9 +5,15 @@ namespace HYBase.System
 {
     public class DataBaseSystem
     {
+        CatalogManager.CatalogManager catalogManager;
+
         void CreateTable(String tableName, AttributeInfo[] attribute)
         {
-            throw new NotImplementedException();
+            catalogManager.CreateTable(tableName, attribute);
+        }
+        void DropTable(String tableName)
+        {
+            catalogManager.DropTable(tableName);
         }
 
     }

@@ -12,6 +12,20 @@ namespace HYBase.CatalogManager
         public int attrCount;
         public int indexCount;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct IndexCatalog
+    {
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public String relationName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public String attributeName;
+        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
+        public String indexName;
+        public int indexID;
+    }
+    [StructLayout(LayoutKind.Sequential)]
+
     struct AttributeCatalog
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]

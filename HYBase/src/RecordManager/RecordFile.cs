@@ -10,6 +10,10 @@ namespace HYBase.RecordManager
     }
     public class RecordFile
     {
+        public int IncreaseKey()
+        {
+            throw new NotImplementedException();
+        }
         public Record GetRec(RID rid)
         {
             throw new NotImplementedException();
