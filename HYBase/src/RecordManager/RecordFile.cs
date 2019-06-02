@@ -15,7 +15,7 @@ namespace HYBase.RecordManager
             throw new NotImplementedException();
         }
 
-        public void InsertRec(byte[] data, RID rid)
+        public RID InsertRec(byte[] data)
         {
             throw new NotImplementedException();
         }

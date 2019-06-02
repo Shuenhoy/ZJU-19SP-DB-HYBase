@@ -8,9 +8,9 @@ namespace HYBase.CatalogManager
     struct RelationCatalog
     {
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 32)]
-        String relationName;
-        int attrCount;
-        int indexCount;
+        public String relationName;
+        public int attrCount;
+        public int indexCount;
     }
     struct AttributeCatalog
     {

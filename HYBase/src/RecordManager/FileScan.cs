@@ -29,15 +29,15 @@ namespace HYBase.RecordManager
         /// <param name="compOp">比较的操作符</param>
         /// <param name="value">要比较的值</param>
         /// <typeparam name="T">可能是int float 或string</typeparam>
-        void OpenScan(RecordFile file,
+        public void OpenScan(RecordFile file,
             int attrLength,
             int attrOffset,
             CompOp compOp,
             object value)
         { throw new NotImplementedException(); }
-
-        Record NextRecord() { throw new NotImplementedException(); }
-        void CloseScan()
+        public bool Eof() { throw new NotImplementedException(); }
+        public bool NextRecord(out Record r) { throw new NotImplementedException(); }
+        public void CloseScan()
         {
             throw new NotImplementedException();
         }

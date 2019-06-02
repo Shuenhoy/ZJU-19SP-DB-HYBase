@@ -13,16 +13,16 @@ namespace HYBase.RecordManager
             throw new NotImplementedException();
         }
 
-        public RecordFile CreateFile(String filename, int recordSize)
+        public RecordFile CreateFile(Stream file, int recordSize)
         {
             throw new NotImplementedException();
         }
 
-        public RecordFile OpenFile(String filename)
+        public RecordFile OpenFile(Stream file)
         {
             throw new NotImplementedException();
         }
-        public void DestoryFile(String filename)
+        public void DestoryFile(Stream file)
         {
             throw new NotImplementedException();
         }
