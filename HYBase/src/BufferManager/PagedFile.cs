@@ -38,6 +38,16 @@ namespace HYBase.BufferManager
         {
             bufferManager.SetPageData(file, pageNum, data);
         }
+        public byte[] GetHeader()
+        {
+            return fileHeader.data;
+        }
+        // 修改文件头部数据（注释 to XY: 暂时还没实现）
+        public void SetHeader(byte[] header)
+        {
+            fileHeader.data = header;
+            headerChanged = true;
+        }
         /// <summary>
         /// 获取分页文件某页的内容
         /// </summary>

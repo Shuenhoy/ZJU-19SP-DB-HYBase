@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using Xunit;
 using HYBase.BufferManager;
 using static HYBase.Utils.Utils;
@@ -125,6 +126,26 @@ namespace HYBase.UnitTests
             Assert.Equal(p3, GetPageFromStream(m, 0));
             Assert.Equal(p1, GetPageFromStream(m, 1));
             Assert.Equal(p2, GetPageFromStream(m, 2));
+
+        }
+        [Fact]
+        void HeaderTest()
+        {
+            MemoryStream m = new MemoryStream();
+            PagedFile pf = pm.CreateFile(m);
+            var header = new byte[4096 - 8];
+            header[3] = 4;
+            header[6] = 1;
+            pf.SetHeader(header);
+            byte[] bytes = new byte[4096 - 8];
+            m.Seek(8, SeekOrigin.Begin);
+            m.Read(bytes, 0, 4096 - 8);
+            Assert.Equal(header, pf.GetHeader());
+            Assert.False(Enumerable.SequenceEqual(bytes, header));
+            pf.WriteHeader();
+            m.Seek(8, SeekOrigin.Begin);
+            m.Read(bytes, 0, 4096 - 8);
+            Assert.Equal(header, bytes);
 
         }
         [Fact]

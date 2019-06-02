@@ -23,6 +23,13 @@ namespace HYBase.BufferManager
         public int firstFree;
         [FieldOffset(4)]
         public int numPages;
+        [FieldOffset(8)]
+
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - 8)]
+        public byte[] data;
+
+
+
     }
     class BufferBlock
     {
