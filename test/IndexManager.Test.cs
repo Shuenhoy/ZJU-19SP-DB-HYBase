@@ -18,6 +18,7 @@ namespace HYBase.UnitTests
             node.Father = 1;
             node.Prev = 3;
             node.Next = 5;
+            node.rid = new RecordManager.RID(2, 4);
             node.ChildrenNumber = 4;
             node.Data = new byte[sizeCounts * 4];
             node.Valid = new bool[sizeCounts];

@@ -4,6 +4,8 @@ using System.Runtime.CompilerServices;
 using System.Diagnostics;
 using System.Linq;
 
+using HYBase.RecordManager;
+
 [assembly: InternalsVisibleTo("test")]
 namespace HYBase.IndexManager
 {
@@ -25,13 +27,13 @@ namespace HYBase.IndexManager
 
         public bool[] Valid;
         public byte[] Data;
-        // TODO: Add RID
+        public RID rid;
         internal byte[] Raw;
 
         public override String ToString()
         {
 
-            return $"({Father},{Prev},{Next},{ChildrenNumber},[{String.Join(',', Valid)}],[{ BitConverter.ToString(Data)}])";
+            return $"({Father},({rid.PageID},{rid.SlotID}),{Prev},{Next},{ChildrenNumber},[{String.Join(',', Valid)}],[{ BitConverter.ToString(Data)}])";
         }
         public override bool Equals(object obj)
         {
@@ -64,22 +66,26 @@ namespace HYBase.IndexManager
         }
         public static int GetSizeCounts(int attributeLength)
         {
-            int sizeCounts = 4060 * 4 / (1 + attributeLength * 4);
+            int sizeCounts = 4052 * 4 / (1 + attributeLength * 4);
             sizeCounts -= sizeCounts % 4;
             return sizeCounts;
         }
         public static byte[] ToByteArray(LeafNode node, int attributeLength, byte[] ret)
         {
             Debug.Assert(node.Valid.Length == node.Data.Length / attributeLength);
-            Debug.Assert(node.Valid.Length % 4 == 0 && node.Valid.Length * (1 + attributeLength * 4) < 4060 * 4);
+            Debug.Assert(node.Valid.Length % 4 == 0 && node.Valid.Length * (1 + attributeLength * 4) < 4052 * 4);
             var sizeCounts = node.Valid.Length;
             var retSpan = ret.AsSpan();
             BitConverter.TryWriteBytes(retSpan, node.Father);
             BitConverter.TryWriteBytes(retSpan.Slice(4), node.Prev);
             BitConverter.TryWriteBytes(retSpan.Slice(8), node.Next);
             BitConverter.TryWriteBytes(retSpan.Slice(12), node.ChildrenNumber);
-            Buffer.BlockCopy(node.Valid, 0, ret, 16, sizeCounts / 4);
-            Buffer.BlockCopy(node.Data, 0, ret, 16 + sizeCounts / 4, sizeCounts * attributeLength);
+            BitConverter.TryWriteBytes(retSpan.Slice(16), node.rid.PageID);
+            BitConverter.TryWriteBytes(retSpan.Slice(20), node.rid.SlotID);
+
+
+            Buffer.BlockCopy(node.Valid, 0, ret, 20, sizeCounts / 4);
+            Buffer.BlockCopy(node.Data, 0, ret, 20 + sizeCounts / 4, sizeCounts * attributeLength);
             return ret;
         }
         public static LeafNode AllocateEmpty(int attributeLength)
@@ -101,10 +107,12 @@ namespace HYBase.IndexManager
             node.Prev = BitConverter.ToInt32(bytes, 4);
             node.Next = BitConverter.ToInt32(bytes, 8);
             node.ChildrenNumber = BitConverter.ToInt32(bytes, 12);
+            node.rid = new RID(BitConverter.ToInt32(bytes, 16), BitConverter.ToInt32(bytes, 20));
 
-            Buffer.BlockCopy(bytes, 16, node.Valid, 0, sizeCounts / 4);
 
-            Buffer.BlockCopy(bytes, 16 + sizeCounts / 4, node.Data, 0, sizeCounts * attributeLength);
+            Buffer.BlockCopy(bytes, 20, node.Valid, 0, sizeCounts / 4);
+
+            Buffer.BlockCopy(bytes, 20 + sizeCounts / 4, node.Data, 0, sizeCounts * attributeLength);
 
             return node;
         }
