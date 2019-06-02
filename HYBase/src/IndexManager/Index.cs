@@ -9,22 +9,31 @@ namespace HYBase.IndexManager
     {
         internal FileHeader fileHeader;
         internal PagedFile file;
-        public Index(AttrType attributeType, int attributeLength, PagedFile f)
+        public Index(AttrType attrType, int attrLength)
         {
-            fileHeader = new FileHeader()
+            fileHeader = new FileHeader
             {
-                AttributeType = attributeType,
-                AttributeLength = attributeLength
+                AttributeType = attrType,
+                AttributeLength = attrLength,
+                root = 0
             };
+            Init();
+        }
+        public Index(PagedFile f)
+        {
+            fileHeader = Utils.Utils.ByteArrayToStructure<FileHeader>(f.GetHeader());
 
             file = f;
+        }
+        internal void WriteHeader()
+        {
+            file.SetHeader(Utils.Utils.StructureToByteArray(fileHeader));
         }
         public void Init()
         {
             file.DeallocatePages(); //Deallocate all pages
-            var root = InternalNode.AllocateEmpty(fileHeader.AttributeLength);
-            root.pageNum = file.AllocatePage();
-            SetInternalNode(root);
+            var root = AllocateLeafNode();
+            fileHeader.root = root.pageNum;
         }
 
         public void InsertEntry(byte[] data, RID rid)

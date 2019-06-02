@@ -9,11 +9,12 @@ using HYBase.RecordManager;
 [assembly: InternalsVisibleTo("test")]
 namespace HYBase.IndexManager
 {
-    [StructLayout(LayoutKind.Sequential, Size = 4096)]
+    [StructLayout(LayoutKind.Sequential, Size = 4096 - 8)]
     internal struct FileHeader
     {
         public AttrType AttributeType;
         public int AttributeLength;
+        public int root;
     }
 
     internal struct LeafNode
@@ -93,6 +94,9 @@ namespace HYBase.IndexManager
             LeafNode node = new LeafNode();
             int sizeCounts = GetSizeCounts(attributeLength);
             node.Valid = new bool[sizeCounts];
+            node.Father = -1;
+            node.Next = node.Prev = -1;
+            node.ChildrenNumber = 0;
             node.Data = new byte[sizeCounts * attributeLength];
 
             return node;
