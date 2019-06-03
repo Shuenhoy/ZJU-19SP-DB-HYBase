@@ -3,7 +3,7 @@ using System.IO;
 
 namespace HYBase.RecordManager
 {
-    enum CompOp
+    public enum CompOp
     {
         EQ,
         LT,

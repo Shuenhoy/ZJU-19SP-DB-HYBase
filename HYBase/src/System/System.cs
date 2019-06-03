@@ -1,20 +1,17 @@
 using System;
 using HYBase.CatalogManager;
+using HYBase.RecordManager;
+using HYBase.IndexManager;
+using HYBase.Interpreter;
 
 namespace HYBase.System
 {
     public class DataBaseSystem
     {
-        CatalogManager.CatalogManager catalogManager;
+        internal CatalogManager.CatalogManager catalogManager;
+        internal RecordManager.RecordManager recoardManager;
+        internal IndexManager.IndexManager indexManager;
 
-        void CreateTable(String tableName, AttributeInfo[] attribute)
-        {
-            catalogManager.CreateTable(tableName, attribute);
-        }
-        void DropTable(String tableName)
-        {
-            catalogManager.DropTable(tableName);
-        }
 
     }
 }

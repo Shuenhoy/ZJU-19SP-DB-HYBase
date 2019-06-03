@@ -97,19 +97,19 @@ namespace HYBase.UnitTests
         void SelectTest()
         {
             var str1 = @"select * from student  ;";
-            var result1 = parse(InterpreterParser.select, str1);
+            var result1 = parse(InterpreterParser.selects, str1);
             Faulted(result1);
             var real1 = new Select("student", Arr<Condition>.Empty);
             Assert.Equal(real1, result1.Reply.Result);
 
             var str2 = @"select * from student where sno = '88\'11'  ;";
-            var result2 = parse(InterpreterParser.select, str2);
+            var result2 = parse(InterpreterParser.selects, str2);
             Faulted(result2);
             var real2 = new Select("student", new[] { new Condition("sno", CompOp.EQ, "88'11" as object) });
             Assert.Equal(real2, result2.Reply.Result);
 
             var str3 = @"select * from student where sage > 20  and sgender = 'F';";
-            var result3 = parse(InterpreterParser.select, str3);
+            var result3 = parse(InterpreterParser.selects, str3);
             Faulted(result3);
             var real3 = new Select("student", new[] { new Condition("sage", CompOp.GT, 20 as object), new Condition("sgender", CompOp.EQ, "F" as object) });
             Assert.Equal(real3, result3.Reply.Result);

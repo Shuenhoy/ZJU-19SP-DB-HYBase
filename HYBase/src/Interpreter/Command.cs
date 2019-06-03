@@ -7,8 +7,8 @@ using LanguageExt;
 
 namespace HYBase.Interpreter
 {
-    abstract class Command { }
-    class CreateTable : Command
+    public abstract class Command { }
+    public class CreateTable : Command
     {
         public readonly string TableName;
         public readonly Arr<(string colName, string type, bool unique)> Columns;
@@ -30,7 +30,7 @@ namespace HYBase.Interpreter
             return HashCode.Combine(TableName.GetHashCode(), Columns.GetHashCode(), Primary.GetHashCode());
         }
     }
-    class DropTable : Command
+    public class DropTable : Command
     {
         public readonly string TableName;
         public DropTable(string tableName)
@@ -50,7 +50,7 @@ namespace HYBase.Interpreter
             return TableName.GetHashCode();
         }
     }
-    class CreateIndex : Command
+    public class CreateIndex : Command
     {
         public readonly string IndexName;
         public readonly string TableName;
@@ -72,7 +72,7 @@ namespace HYBase.Interpreter
             return HashCode.Combine(TableName.GetHashCode(), IndexName.GetHashCode(), ColumnName.GetHashCode());
         }
     }
-    class DropIndex : Command
+    public class DropIndex : Command
     {
         public readonly string IndexName;
         public DropIndex(string indexName)
@@ -92,7 +92,7 @@ namespace HYBase.Interpreter
             return IndexName.GetHashCode();
         }
     }
-    class Condition
+    public class Condition
     {
         public readonly string ColumnName;
         public readonly CompOp Op;
@@ -115,7 +115,7 @@ namespace HYBase.Interpreter
         }
 
     }
-    class Select : Command
+    public class Select : Command
     {
         public readonly string TableName;
         public readonly Arr<Condition> Conditions;
@@ -137,7 +137,7 @@ namespace HYBase.Interpreter
         }
     }
 
-    class Insert : Command
+    public class Insert : Command
     {
         public readonly string TableName;
         public readonly Arr<object> Values;
@@ -159,7 +159,7 @@ namespace HYBase.Interpreter
         }
     }
 
-    class Delete : Command
+    public class Delete : Command
     {
         public readonly string TableName;
         public readonly Arr<Condition> Conditions;
@@ -183,7 +183,7 @@ namespace HYBase.Interpreter
     }
 
 
-    class Quit : Command
+    public class Quit : Command
     {
         public override bool Equals(object obj)
         {
@@ -200,7 +200,7 @@ namespace HYBase.Interpreter
         }
     }
 
-    class ExecFile : Command
+    public class ExecFile : Command
     {
         public readonly string FileName;
 

@@ -143,7 +143,7 @@ namespace HYBase.Interpreter
             from value in value
             select new Condition(column, op, value);
 
-        internal static Parser<Command> select =
+        internal static Parser<Command> selects =
             from _0 in keywords("select", "*", "from")
             from tableName in identifier.label("table name")
             from conditions in optional(
@@ -199,5 +199,13 @@ namespace HYBase.Interpreter
             from _eoc in eoc
 
             select new ExecFile(file) as Command;
+        internal static Parser<Command[]> commands =
+            from cs in many(choice(execfile, quit, createIndex, createTable, dropTable, dropIndex, selects))
+            select cs.ToArray();
+        public static Command[] Parse(string input)
+        {
+            var parseResult = parse(commands, input);
+            return parseResult.Reply.Result;
+        }
     }
 }
