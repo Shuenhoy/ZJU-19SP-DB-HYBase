@@ -205,6 +205,10 @@ namespace HYBase.Interpreter
         public static Command[] Parse(string input)
         {
             var parseResult = parse(commands, input);
+            if (parseResult.IsFaulted)
+            {
+                throw new Exception(parseResult.Reply.Error.ToString());
+            }
             return parseResult.Reply.Result;
         }
     }

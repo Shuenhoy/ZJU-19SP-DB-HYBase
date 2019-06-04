@@ -24,16 +24,34 @@ namespace HYBase.CatalogManager
         }
         public int CreateIndex(String tableName, String columnName, String indexName)
         {
-            var catalog = new IndexCatalog
-            {
-                relationName = tableName,
-                attributeName = columnName,
-                indexName = indexName,
-                indexID = indexCatalog.IncreaseKey()
-            };
-            indexCatalog.InsertRec(StructureToByteArray(catalog));
 
-            return catalog.indexID;
+            Record r;
+
+            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (attr.attributeName == columnName)
+                {
+                    var catalog = new IndexCatalog
+                    {
+                        relationName = tableName,
+                        attributeName = columnName,
+                        indexName = indexName,
+                        indexID = indexCatalog.IncreaseKey()
+                    };
+                    attr.indexNo = catalog.indexID;
+                    r.Data = StructureToByteArray(attr);
+                    attrCatalog.UpdateRec(r);
+                    indexCatalog.InsertRec(StructureToByteArray(catalog));
+                    scan.CloseScan();
+                    return catalog.indexID;
+
+                }
+            }
+            scan.CloseScan();
+            throw new Exception("no such index");
         }
         public void CreateTable(String tableName, AttributeInfo[] attributes)
         {
@@ -71,20 +89,71 @@ namespace HYBase.CatalogManager
             }
             scan.CloseScan();
         }
+        public void DropIndex(String tableName)
+        {
+            scan.OpenScan(indexCatalog, 32, 0, CompOp.EQ, tableName);
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                indexCatalog.DeleteRec(r.Rid);
+                return;
+            }
+            scan.CloseScan();
+            throw new Exception("no such index!");
+        }
         public bool TableExist(String tableName)
         {
             scan.OpenScan(relCatalog, 32, 0, CompOp.EQ, tableName);
             Record r;
             while (scan.NextRecord(out r))
             {
-                relCatalog.DeleteRec(r.Rid);
                 scan.CloseScan();
                 return true;
             }
             scan.CloseScan();
             return false;
         }
-        AttributeCatalog[] GetAttributes(String tableName)
+        public bool ColumnExist(String tableName, String columnName)
+        {
+            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (attr.attributeName == columnName)
+                {
+                    scan.CloseScan();
+                    return true;
+                }
+            }
+            scan.CloseScan();
+            return false;
+        }
+        public bool GetIndex(String tableName, String columnName, out IndexCatalog? index)
+        {
+            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (attr.attributeName == columnName)
+                {
+                    scan.CloseScan();
+                    index = null;
+                    if (attr.indexNo < 0) return false;
+                    scan.OpenScan(indexCatalog, 4, 48, CompOp.EQ, attr.indexNo);
+                    while (scan.NextRecord(out r))
+                    {
+                        index = ByteArrayToStructure<IndexCatalog>(r.Data);
+                        return true;
+                    }
+                    return true;
+                }
+            }
+            scan.CloseScan();
+            throw new Exception("no such column!");
+        }
+        public AttributeCatalog[] GetAttributes(String tableName)
         {
             List<AttributeCatalog> attrs = new List<AttributeCatalog>();
             scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);

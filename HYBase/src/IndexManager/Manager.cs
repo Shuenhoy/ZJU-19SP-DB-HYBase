@@ -10,11 +10,11 @@ namespace HYBase.IndexManager
         {
 
         }
-        public Index CreateIndex(Stream file, int indexNo, AttrType attrType, int attrLength)
+        public Index CreateIndex(Stream file, AttrType attrType, int attrLength)
         {
             throw new NotImplementedException();
         }
-        public Index OpenIndex(Stream file, int indexNo)
+        public Index OpenIndex(Stream file)
         {
             throw new NotImplementedException();
         }

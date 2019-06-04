@@ -11,6 +11,7 @@ namespace HYBase.System
         internal CatalogManager.CatalogManager catalogManager;
         internal RecordManager.RecordManager recoardManager;
         internal IndexManager.IndexManager indexManager;
+        internal Interpreter.Interpreter interpreter;
 
 
     }

@@ -5,13 +5,47 @@ namespace HYBase.Interpreter
 {
     public class Interpreter
     {
-        public Interpreter(API api)
+        API api;
+        public Interpreter(API a)
         {
-            throw new NotImplementedException();
+            api = a;
         }
         public void Exec(string input)
         {
-            throw new NotImplementedException();
+            foreach (var c in InterpreterParser.Parse(input))
+            {
+                ExecCommand(c);
+            }
+        }
+        public void ExecCommand(Command command)
+        {
+            switch (command)
+            {
+                case Select s:
+                    api.Select(s);
+                    break;
+                case CreateTable c:
+                    api.CreateTable(c);
+                    break;
+                case CreateIndex c:
+                    api.CreateIndex(c);
+                    break;
+                case DropTable d:
+                    api.DropTable(d);
+                    break;
+                case DropIndex d:
+                    api.DropIndex(d);
+                    break;
+                case Quit q:
+                    api.Quit(q);
+                    break;
+                case ExecFile e:
+                    api.ExecFile(e);
+                    break;
+                case Delete d:
+                    api.Delete(d);
+                    break;
+            }
         }
     }
 }

@@ -5,9 +5,9 @@ namespace HYBase.RecordManager
 {
     public class Record
     {
-        public Record() { }
-        public byte[] Data { get { throw new NotImplementedException(); } }
-        public RID Rid { get { throw new NotImplementedException(); } }
+        public Record() { throw new NotImplementedException(); }
+        public byte[] Data;
+        public readonly RID Rid;
 
     }
 }
