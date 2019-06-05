@@ -12,9 +12,9 @@ namespace HYBase.UnitTests
     {
         [FieldOffset(0)]
         int a;
-        [FieldOffset(4)]
-        int b;
         [FieldOffset(8)]
+        int b;
+        [FieldOffset(16)]
         int c;
         public TestPage(int aa, int bb, int cc)
         {
@@ -133,18 +133,18 @@ namespace HYBase.UnitTests
         {
             MemoryStream m = new MemoryStream();
             PagedFile pf = pm.CreateFile(m);
-            var header = new byte[4096 - 8];
+            var header = new byte[4096 - 16];
             header[3] = 4;
             header[6] = 1;
             pf.SetHeader(header);
-            byte[] bytes = new byte[4096 - 8];
-            m.Seek(8, SeekOrigin.Begin);
-            m.Read(bytes, 0, 4096 - 8);
+            byte[] bytes = new byte[4096 - 16];
+            m.Seek(16, SeekOrigin.Begin);
+            m.Read(bytes, 0, 4096 - 16);
             Assert.Equal(header, pf.GetHeader());
             Assert.False(Enumerable.SequenceEqual(bytes, header));
             pf.WriteHeader();
-            m.Seek(8, SeekOrigin.Begin);
-            m.Read(bytes, 0, 4096 - 8);
+            m.Seek(16, SeekOrigin.Begin);
+            m.Read(bytes, 0, 4096 - 16);
             Assert.Equal(header, bytes);
 
         }
@@ -241,9 +241,9 @@ namespace HYBase.UnitTests
         }
         TestPage GetPageFromStream(Stream m, int pageNum)
         {
-            byte[] bytes = new byte[4092];
+            byte[] bytes = new byte[4096 - 8];
             m.Seek((pageNum + 1) * 4096 + 8, SeekOrigin.Begin);
-            m.Read(bytes, 0, 4092);
+            m.Read(bytes, 0, 4096 - 8);
             return ByteArrayToStructure<TestPage>(bytes);
         }
         PagedFileHeader GetHeaderFromStream(Stream m)

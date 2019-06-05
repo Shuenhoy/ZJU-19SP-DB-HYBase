@@ -21,11 +21,11 @@ namespace HYBase.BufferManager
     {
         [FieldOffset(0)]
         public int firstFree;
-        [FieldOffset(4)]
-        public int numPages;
         [FieldOffset(8)]
+        public int numPages;
+        [FieldOffset(16)]
 
-        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - 8)]
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - 16)]
         public byte[] data;
 
 
@@ -44,7 +44,7 @@ namespace HYBase.BufferManager
             PinCount = 0;
             page = new PageData();
             page.nextFree = -1;
-            page.data = new byte[4096 - 8];
+            page.data = new byte[4096 - 16];
         }
 
     }
