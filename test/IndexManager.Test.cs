@@ -3,6 +3,7 @@ using System.IO;
 using Xunit;
 using HYBase.IndexManager;
 using static HYBase.Utils.Utils;
+using HYBase.Utils;
 using System.Runtime.InteropServices;
 namespace HYBase.UnitTests
 {
@@ -12,21 +13,24 @@ namespace HYBase.UnitTests
         void LeafNodeMarshalTest()
         {
             const int attributeLength = 4;
-            const int sizeCounts0 = 4060 * 4 / (1 + attributeLength * 4);
-            const int sizeCounts = sizeCounts0 - sizeCounts0 % 4;
+            int sizeCounts = LeafNode.GetSizeCounts(attributeLength);
             LeafNode node = new LeafNode();
             node.Father = 1;
             node.Prev = 3;
             node.Next = 5;
-            node.rid = new RecordManager.RID(2, 4);
             node.ChildrenNumber = 4;
-            node.Data = new byte[sizeCounts * 4];
-            node.Valid = new bool[sizeCounts];
-            node.Valid[0] = true;
-            node.Valid[1] = true;
-            node.Valid[2] = false;
-            node.Valid[3] = true;
-            Buffer.BlockCopy(new int[] { 1, 8, 4, 2 }, 0, node.Data, 0, 16);
+            node.Data = new BytesItem(new byte[sizeCounts * 4], attributeLength);
+            node.ridPage = new int[sizeCounts];
+            Array.Copy(new[] { 1, 2, 3, 4 }, node.ridPage, 4);
+            node.ridSlot = new int[sizeCounts];
+
+            Array.Copy(new[] { 5, 2, 3, 4 }, node.ridSlot, 4);
+
+            var temp = new int[sizeCounts];
+            Array.Copy(new[] { 1, 8, 4, 2 }, temp, 4);
+
+            MemoryMarshal.Cast<int, byte>(temp.AsSpan()).CopyTo(node.Data.Span);
+
             var tmp = LeafNode.AllocateEmpty(attributeLength);
             Assert.Equal(node, LeafNode.FromByteArray(LeafNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
         }
@@ -35,17 +39,12 @@ namespace HYBase.UnitTests
         void InternalNodeMarshalTest()
         {
             const int attributeLength = 4;
-            const int sizeCounts0 = 4086 * 4 / (1 + 4 * 4 + attributeLength * 4);
-            const int sizeCounts = sizeCounts0 - sizeCounts0 % 4;
+            int sizeCounts = InternalNode.GetSizeCounts(attributeLength);
             InternalNode node = new InternalNode();
 
             node.Father = -1;
             node.ChildrenNumber = 4;
-            node.Valid = new bool[sizeCounts];
-            node.Valid[0] = true;
-            node.Valid[1] = true;
-            node.Valid[2] = false;
-            node.Valid[3] = true;
+
 
 
             node.Children = new int[sizeCounts];
@@ -55,9 +54,10 @@ namespace HYBase.UnitTests
             node.Children[3] = 123;
 
 
-            node.Values = new byte[sizeCounts * 4];
+            node.Values = new BytesItem(new byte[sizeCounts * 4], attributeLength);
 
-            Buffer.BlockCopy(new int[] { 1, 8, 4, 2 }, 0, node.Values, 0, 16);
+            var temp = new int[] { 1, 8, 4, 2 };
+            MemoryMarshal.Cast<int, byte>(temp.AsSpan()).CopyTo(node.Values.Span);
             var tmp = InternalNode.AllocateEmpty(attributeLength);
             Assert.Equal(node, InternalNode.FromByteArray(InternalNode.ToByteArray(node, attributeLength, new byte[4092]), attributeLength, ref tmp));
         }
