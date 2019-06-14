@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using HYBase.RecordManager;
 using HYBase.BufferManager;
 using System.Collections.Generic;
@@ -33,70 +34,236 @@ namespace HYBase.IndexManager
         {
             file.SetHeader(Utils.Utils.StructureToByteArray(fileHeader));
         }
+        public void Close()
+        {
+            WriteHeader();
+            file.Close();
+        }
         public void Init()
         {
             file.DeallocatePages(); //Deallocate all pages
-            var root = AllocateLeafNode();
-            root.Father = -1;
-            root.Prev = -1;
-            root.Next = -1;
-            root.WriteBack(fileHeader.AttributeLength);
-            fileHeader.root = root.pageNum;
+
+            var rootc = AllocateLeafNode();
+            rootc.Father = -1;
+            rootc.Prev = -1;
+            rootc.Next = -1;
+            SetLeafNode(rootc);
+            UnPin(rootc);
+            fileHeader.root = rootc.pageNum;
         }
+        public void InsertChildren(int id, int childId, byte[] key, int height)
+        {
+            var inter = GetInternalNode(id);
+
+            for (int i = 0; i < inter.ChildrenNumber; i++)
+            {
+                if (
+                    i == inter.ChildrenNumber - 1 || BytesComp.Comp(
+                        key.AsSpan(),
+                        inter.Values.Get(i), fileHeader.AttributeType) <= 0)
+                {
+                    if (inter.ChildrenNumber + 1 >= inter.Children.Length)
+                    {
+                        SplitInsert(inter, key, childId, i);
+                    }
+                    else
+                    {
+                        inter.Insert(childId, key, i);
+
+                    }
+                    break;
+                }
+            }
+            file.UnPin(id);
+        }
+        private (int childId, byte[] child1Key, byte[] child2Key) SplitInsert(InternalNode inter, byte[] key, int childId, int insertIndex)
+        {
+            int os = inter.ChildrenNumber;
+            int center = inter.ChildrenNumber / 2;
+            int r = inter.ChildrenNumber - center;
+            InternalNode sinter = AllocateInternalNode();
+
+            inter.Values.Span.Slice(center * fileHeader.AttributeLength).CopyTo(sinter.Values.Span);
+            Array.Copy(inter.Children, center, sinter.Children, 0, r);
+            inter.ChildrenNumber = center;
+            sinter.ChildrenNumber = r;
+            if (insertIndex >= center)
+            {
+                sinter.Insert(childId, key, insertIndex - center);
+            }
+            else
+            {
+                sinter.Insert(childId, key, insertIndex);
+            }
+
+            Debug.Assert(inter.ChildrenNumber <= inter.Children.Length);
+            Debug.Assert(sinter.ChildrenNumber <= sinter.Children.Length);
+            Debug.Assert(inter.ChildrenNumber + sinter.ChildrenNumber - 1 == os);
+            SetInternalNode(inter);
+            SetInternalNode(sinter);
+            UnPin(inter);
+            UnPin(sinter);
+
+            return (sinter.pageNum, inter.Values.Get(sinter.ChildrenNumber - 1).ToArray(), sinter.Values.Get(sinter.ChildrenNumber - 1).ToArray());
+        }
+        private (int childId, byte[] child1Key, byte[] child2Key) SplitInsert(LeafNode leaf, byte[] data, RID rid, int insertIndex)
+        {
+            int center = leaf.ChildrenNumber / 2;
+            int r = leaf.ChildrenNumber - center;
+            LeafNode sleaf = AllocateLeafNode();
+
+            leaf.Data.Span.Slice(center * fileHeader.AttributeLength).CopyTo(sleaf.Data.Span);
+            Array.Copy(leaf.ridSlot, center, sleaf.ridSlot, 0, r);
+            Array.Copy(leaf.ridPage, center, sleaf.ridPage, 0, r);
+            leaf.ChildrenNumber = center;
+            sleaf.ChildrenNumber = r;
+            if (insertIndex >= center)
+            {
+                sleaf.Insert(rid.SlotID, rid.PageID, data, insertIndex - center);
+            }
+            else
+            {
+                leaf.Insert(rid.SlotID, rid.PageID, data, insertIndex);
+            }
+
+
+            SetLeafNode(leaf);
+            SetLeafNode(sleaf);
+            UnPin(leaf);
+            UnPin(sleaf);
+            return (sleaf.pageNum, leaf.Data.Get(sleaf.ChildrenNumber - 1).ToArray(), sleaf.Data.Get(sleaf.ChildrenNumber - 1).ToArray());
+        }
+
+        private (int childId, byte[] child1Key, byte[] child2Key) insert(byte[] data, RID rid, int id)
+        {
+            var leaf = GetLeafNode(id);
+            for (int i = 0; i <= leaf.ChildrenNumber; i++)
+            {
+                if (
+                    i == leaf.ChildrenNumber || BytesComp.Comp(
+                        data.AsSpan(),
+                        leaf.Data.Get(i), fileHeader.AttributeType) < 0)
+                {
+                    if (leaf.ChildrenNumber >= leaf.ridPage.Length)
+                    {
+                        return SplitInsert(leaf, data, rid, i);
+                    }
+                    else
+                    {
+                        leaf.Insert(rid.SlotID, rid.PageID, data, i);
+                        Debug.Assert(leaf.ChildrenNumber <= leaf.ridPage.Length);
+                        SetLeafNode(leaf);
+                        UnPin(leaf);
+                        return (-1, null, null);
+                    }
+
+                }
+            }
+            throw new NotSupportedException();
+        }
+
+        private (int childId, byte[] child1Key, byte[] child2Key) insert(byte[] data, RID rid, int id, int level)
+        {
+            var inter = GetInternalNode(id);
+            for (int i = 0; i < inter.ChildrenNumber || inter.ChildrenNumber == 0; i++)
+            {
+                if (inter.ChildrenNumber == 0 ||
+                    i == inter.ChildrenNumber - 1 || BytesComp.Comp(data.AsSpan(), inter.Values.Get(i), fileHeader.AttributeType) <= 0)
+                {
+                    var (newChild, child1Key, child2Key)
+                        = level == fileHeader.Height - 1 ? insert(data, rid, inter.Children[i]) : insert(data, rid, inter.Children[i], level + 1);
+
+                    if (newChild != -1)
+                    {
+                        inter.Values.Set(i, child1Key);
+                        if (inter.ChildrenNumber >= inter.Children.Length)
+                        {
+                            return SplitInsert(inter, child2Key, newChild, i + 1);
+                        }
+                        else
+                        {
+                            inter.Insert(newChild, data, i + 1);
+                            SetInternalNode(inter);
+                            UnPin(inter);
+                            return (-1, null, null);
+                        }
+                    }
+                    else
+                    {
+                        UnPin(inter);
+                        return (-1, null, null);
+                    }
+                }
+
+            }
+            throw new NotSupportedException();
+        }
+
 
         public void InsertEntry(byte[] data, RID rid)
         {
-            List<int> l;
-            int id = fileHeader.root;
-
-            for (int level = 0; level <= fileHeader.Height; level++)
+            if (fileHeader.Height == 0)
             {
-                if (level == fileHeader.Height)
+                var (nc, key1, key2) = insert(data, rid, fileHeader.root);
+                if (nc != -1)
                 {
-                    var leaf = GetLeafNode(id);
+                    var al = AllocateInternalNode();
+                    al.Insert(fileHeader.root, key1, 0);
+                    al.Insert(nc, key2, 1);
+                    fileHeader.root = al.pageNum;
+                    fileHeader.Height++;
 
-                    for (int i = 0; i < leaf.ChildrenNumber; i++)
-                    {
-                        //     if (
-                        //         i == leaf.ChildrenNumber - 1 || BytesComp.Comp(
-                        //             data.AsSpan(),
-                        //             leaf.Data.AsSpan().Slice(i * fileHeader.AttributeLength, fileHeader.AttributeLength),
-                        //                 fileHeader.AttributeType) < 0)
-                        //     {
-                        //         if (leaf.ChildrenNumber + 1 >= leaf.ridPage.Length)
-                        //         {//split
-
-                        //         }
-                        //         else
-                        //         {
-                        //             Buffer.BlockCopy(leaf.Data,
-                        //                 i * fileHeader.AttributeLength, leaf.Data, (i + 1) * fileHeader.AttributeLength, (leaf.ChildrenNumber - i) * fileHeader.AttributeLength);
-                        //         }
-                        //         break;
-                        //     }
-                    }
-                    file.UnPin(id);
-                }
-                else
-                {
-                    var inter = GetInternalNode(id);
-                    for (int i = 0; i < inter.ChildrenNumber; i++)
-                    {
-                        // if (
-                        //     i == inter.ChildrenNumber - 1 || BytesComp.Comp(
-                        //         data.AsSpan(),
-                        //         inter.Values.AsSpan().Slice(i * fileHeader.AttributeLength, fileHeader.AttributeLength),
-                        //             fileHeader.AttributeType) < 0)
-                        // {
-                        //     id = inter.Children[i];
-                        //     break;
-                        // }
-                    }
-                    file.UnPin(id);
+                    WriteHeader();
+                    SetInternalNode(al);
+                    UnPin(al);
                 }
             }
-            throw new NotImplementedException();
+            else
+            {
+                var (nc, key1, key2) = insert(data, rid, fileHeader.root, 0);
+                if (nc != -1)
+                {
+                    var al = AllocateInternalNode();
+                    al.Insert(fileHeader.root, key1, 0);
+                    al.Insert(nc, key2, 1);
+                    fileHeader.root = al.pageNum;
+                    fileHeader.Height++;
+                    WriteHeader();
+                    SetInternalNode(al);
+                    UnPin(al);
+
+                }
+            }
         }
+        internal (LeafNode l, int id)? Find(byte[] key)
+        {
+            int id = fileHeader.root;
+            for (int level = 0; level < fileHeader.Height; level++)
+            {
+                var inter = GetInternalNode(id);
+                for (int i = 0; i < inter.ChildrenNumber; i++)
+                {
+                    if (i == inter.ChildrenNumber - 1 || BytesComp.Comp(key.AsSpan(), inter.Values.Get(i), fileHeader.AttributeType) <= 0)
+                    {
+                        id = inter.Children[i];
+                        break;
+                    }
+                }
+                UnPin(inter);
+            }
+            var leaf = GetLeafNode(id);
+            for (int i = 0; i < leaf.ChildrenNumber; i++)
+            {
+                if (BytesComp.Comp(key.AsSpan(), leaf.Data.Get(i), fileHeader.AttributeType) <= 0)
+                {
+                    UnPin(leaf);
+                    return (leaf, i);
+                }
+            }
+            return null;
+        }
+
+
         public void DeleteEntry(byte[] data, RID rid)
         {
             throw new NotImplementedException();
@@ -105,6 +272,7 @@ namespace HYBase.IndexManager
         {
             throw new NotImplementedException();
         }
+
         void UnPin(in InternalNode node)
         {
             file.UnPin(node.pageNum);
@@ -115,13 +283,13 @@ namespace HYBase.IndexManager
         }
         void SetInternalNode(in InternalNode node)
         {
-            node.WriteBack(node.pageNum);
+            node.WriteBack(fileHeader.AttributeLength);
             file.MarkDirty(node.pageNum);
         }
 
         void SetLeafNode(in LeafNode node)
         {
-            node.WriteBack(node.pageNum);
+            node.WriteBack(fileHeader.AttributeLength);
             file.MarkDirty(node.pageNum);
         }
         /// <summary>
@@ -140,6 +308,7 @@ namespace HYBase.IndexManager
         {
             var page = InternalNode.AllocateEmpty(fileHeader.AttributeLength);
             page.pageNum = file.AllocatePage();
+            page.Raw = file.GetPageData(page.pageNum);
             SetInternalNode(page);
             return page;
         }
@@ -152,7 +321,9 @@ namespace HYBase.IndexManager
         {
             var page = LeafNode.AllocateEmpty(fileHeader.AttributeLength);
             page.pageNum = file.AllocatePage();
+            page.Raw = file.GetPageData(page.pageNum);
             SetLeafNode(page);
+
             return page;
         }
 

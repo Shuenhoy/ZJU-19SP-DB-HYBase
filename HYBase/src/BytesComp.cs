@@ -6,7 +6,7 @@ namespace HYBase
 
     public static class BytesComp
     {
-        public static int Comp(Span<byte> a, Span<byte> b, AttrType attrType)
+        public static int Comp(ReadOnlySpan<byte> a, ReadOnlySpan<byte> b, AttrType attrType)
         {
             switch (attrType)
             {
@@ -16,14 +16,12 @@ namespace HYBase
                         int bb = BitConverter.ToInt32(b);
                         return aa - bb;
                     }
-                    break;
                 case AttrType.Float:
                     {
                         float aa = BitConverter.ToSingle(a);
                         float bb = BitConverter.ToSingle(b);
                         return aa > bb ? 1 : Math.Abs(aa - bb) < 1e-6 ? 0 : -1;
                     }
-                    break;
                 case AttrType.String:
                     {
 
@@ -31,7 +29,6 @@ namespace HYBase
                         string bb = Encoding.UTF8.GetString(b);
                         return String.Compare(aa, bb);
                     }
-                    break;
                 default:
                     throw new NotImplementedException();
             }

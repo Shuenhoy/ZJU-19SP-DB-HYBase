@@ -32,7 +32,10 @@ namespace HYBase.Utils
                 return mem.Length / itemLength;
             }
         }
-
+        public void Set(int index, ReadOnlySpan<byte> value)
+        {
+            value.CopyTo(mem.Span.Slice(index * itemLength, itemLength));
+        }
         public ReadOnlySpan<byte> Get(int index)
         {
             return mem.Span.Slice(index * itemLength, itemLength);

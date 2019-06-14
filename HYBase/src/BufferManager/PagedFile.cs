@@ -163,6 +163,8 @@ namespace HYBase.BufferManager
         }
         public void Close()
         {
+            WriteHeader();
+            ForcePages();
             file.Close();
         }
 

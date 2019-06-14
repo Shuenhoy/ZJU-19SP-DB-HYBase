@@ -21,7 +21,7 @@ namespace HYBase.IndexManager
     internal struct LeafNode
     {
         internal int pageNum;
-
+        public byte Tag;
         public int Father;
         public int Prev;
         public int Next;
@@ -30,6 +30,24 @@ namespace HYBase.IndexManager
         public int[] ridSlot;
         public int[] ridPage;
         internal byte[] Raw;
+
+        public void Insert(int slot, int page, byte[] data, int index)
+        {
+            ChildrenNumber++;
+
+            Data.Insert(data, index);
+            Array.Copy(ridSlot, index, ridSlot, index + 1, ridSlot.Length - index - 1);
+            ridSlot[index] = slot;
+            Array.Copy(ridPage, index, ridPage, index + 1, ridSlot.Length - index - 1);
+            ridPage[index] = page;
+        }
+
+        public void Delete(int index)
+        {
+            Data.Delete(index);
+            Array.Copy(ridSlot, index + 1, ridSlot, index, ridSlot.Length - index - 1);
+            Array.Copy(ridPage, index + 1, ridPage, index, ridSlot.Length - index - 1);
+        }
 
         public override String ToString()
         {
@@ -67,7 +85,7 @@ namespace HYBase.IndexManager
         }
         public static int GetSizeCounts(int attributeLength)
         {
-            int sizeCounts = 4052 / (attributeLength + 8);
+            int sizeCounts = 4061 / (attributeLength + 8);
             return sizeCounts;
         }
         public static byte[] ToByteArray(LeafNode node, int attributeLength, byte[] ret)
@@ -75,16 +93,17 @@ namespace HYBase.IndexManager
 
             var sizeCounts = node.ridPage.Length;
             var retSpan = ret.AsSpan();
-            BitConverter.TryWriteBytes(retSpan, node.Father);
-            BitConverter.TryWriteBytes(retSpan.Slice(4), node.Prev);
-            BitConverter.TryWriteBytes(retSpan.Slice(8), node.Next);
-            BitConverter.TryWriteBytes(retSpan.Slice(12), node.ChildrenNumber);
+            retSpan[0] = node.Tag;
+            BitConverter.TryWriteBytes(retSpan.Slice(1), node.Father);
+            BitConverter.TryWriteBytes(retSpan.Slice(5), node.Prev);
+            BitConverter.TryWriteBytes(retSpan.Slice(9), node.Next);
+            BitConverter.TryWriteBytes(retSpan.Slice(13), node.ChildrenNumber);
 
 
-            Buffer.BlockCopy(node.Data.Bytes, 0, ret, 16, sizeCounts * attributeLength);
+            Buffer.BlockCopy(node.Data.Bytes, 0, ret, 17, sizeCounts * attributeLength);
 
-            Buffer.BlockCopy(node.ridSlot, 0, ret, 16 + sizeCounts * attributeLength, sizeCounts * 4);
-            Buffer.BlockCopy(node.ridPage, 0, ret, 16 + sizeCounts * (attributeLength + 4), sizeCounts * 4);
+            Buffer.BlockCopy(node.ridSlot, 0, ret, 17 + sizeCounts * attributeLength, sizeCounts * 4);
+            Buffer.BlockCopy(node.ridPage, 0, ret, 17 + sizeCounts * (attributeLength + 4), sizeCounts * 4);
 
             return ret;
         }
@@ -94,6 +113,7 @@ namespace HYBase.IndexManager
             int sizeCounts = GetSizeCounts(attributeLength);
             node.ridSlot = new int[sizeCounts];
             node.ridPage = new int[sizeCounts];
+            node.Tag = 1;
             node.Father = -1;
             node.Next = node.Prev = -1;
             node.ChildrenNumber = 0;
@@ -106,14 +126,17 @@ namespace HYBase.IndexManager
             int sizeCounts = GetSizeCounts(attributeLength);
             var bytesSpan = bytes.AsSpan();
             node.Raw = bytes;
-            node.Father = BitConverter.ToInt32(bytes, 0);
-            node.Prev = BitConverter.ToInt32(bytes, 4);
-            node.Next = BitConverter.ToInt32(bytes, 8);
-            node.ChildrenNumber = BitConverter.ToInt32(bytes, 12);
+            node.Tag = bytes[0];
+            Debug.Assert(node.Tag == 1, "This is an InternalNode!");
 
-            bytes.AsSpan().Slice(16, sizeCounts * attributeLength).CopyTo(node.Data.Span.Slice(0, sizeCounts * attributeLength));
-            Buffer.BlockCopy(bytes, 16 + sizeCounts * attributeLength, node.ridSlot, 0, sizeCounts * 4);
-            Buffer.BlockCopy(bytes, 16 + sizeCounts * (attributeLength + 4), node.ridPage, 0, sizeCounts * 4);
+            node.Father = BitConverter.ToInt32(bytes, 1);
+            node.Prev = BitConverter.ToInt32(bytes, 5);
+            node.Next = BitConverter.ToInt32(bytes, 9);
+            node.ChildrenNumber = BitConverter.ToInt32(bytes, 13);
+
+            bytes.AsSpan().Slice(17, sizeCounts * attributeLength).CopyTo(node.Data.Span.Slice(0, sizeCounts * attributeLength));
+            Buffer.BlockCopy(bytes, 17 + sizeCounts * attributeLength, node.ridSlot, 0, sizeCounts * 4);
+            Buffer.BlockCopy(bytes, 17 + sizeCounts * (attributeLength + 4), node.ridPage, 0, sizeCounts * 4);
 
             return node;
         }
@@ -123,6 +146,8 @@ namespace HYBase.IndexManager
     internal struct InternalNode
     {
         internal int pageNum;
+        public byte Tag;
+
         public int Father;
         public int ChildrenNumber;
 
@@ -146,10 +171,30 @@ namespace HYBase.IndexManager
                 && Enumerable.SequenceEqual(Children, other.Children)
                 && Enumerable.SequenceEqual(Values.Bytes, other.Values.Bytes);
         }
+
+
+        public void Insert(int childId, byte[] key, int index)
+        {
+            Values.Insert(key, index);
+            ChildrenNumber++;
+            Debug.Assert(ChildrenNumber <= Children.Length);
+            Array.Copy(Children, index, Children, index + 1, Children.Length - index - 1);
+            Children[index] = childId;
+        }
+
+        public void Delete(int index)
+        {
+            Values.Delete(index);
+            Array.Copy(Children, index + 1, Children, index, Children.Length - index - 1);
+        }
+
+
+
         public void WriteBack(int attributeLength)
         {
             ToByteArray(this, attributeLength, Raw);
         }
+
         public void ReSync(int attributeLength)
         {
             FromByteArray(Raw, attributeLength, ref this);
@@ -161,7 +206,7 @@ namespace HYBase.IndexManager
         }
         public static int GetSizeCounts(int attributeLength)
         {
-            int sizeCounts = 4086 / (4 + attributeLength);
+            int sizeCounts = (4088 - 9) / (4 + attributeLength);
             return sizeCounts;
         }
         public static InternalNode AllocateEmpty(int attributeLength)
@@ -169,7 +214,8 @@ namespace HYBase.IndexManager
             InternalNode node = new InternalNode();
             int sizeCounts = GetSizeCounts(attributeLength);
             node.Children = new int[sizeCounts];
-
+            node.ChildrenNumber = 0;
+            node.Tag = 2;
             node.Values = new BytesItem(new byte[sizeCounts * attributeLength], attributeLength);
 
             return node;
@@ -178,21 +224,24 @@ namespace HYBase.IndexManager
         {
             var sizeCounts = node.Children.Length;
             var retSpan = ret.AsSpan();
-            BitConverter.TryWriteBytes(retSpan, node.Father);
-            BitConverter.TryWriteBytes(retSpan.Slice(4), node.ChildrenNumber);
-            Buffer.BlockCopy(node.Children, 0, ret, 8, sizeCounts * 4);
-            Buffer.BlockCopy(node.Values.Bytes, 0, ret, 8 + sizeCounts * 4, sizeCounts * attributeLength);
+            retSpan[0] = node.Tag;
+            BitConverter.TryWriteBytes(retSpan.Slice(1), node.Father);
+            BitConverter.TryWriteBytes(retSpan.Slice(5), node.ChildrenNumber);
+            Buffer.BlockCopy(node.Children, 0, ret, 9, sizeCounts * 4);
+            Buffer.BlockCopy(node.Values.Bytes, 0, ret, 9 + sizeCounts * 4, sizeCounts * attributeLength);
             return ret;
         }
         public static InternalNode FromByteArray(byte[] bytes, int attributeLength, ref InternalNode node)
         {
             int sizeCounts = GetSizeCounts(attributeLength);
             var bytesSpan = bytes.AsSpan();
-            node.Father = BitConverter.ToInt32(bytes, 0);
-            node.ChildrenNumber = BitConverter.ToInt32(bytes, 4);
+            node.Tag = bytes[0];
+            Debug.Assert(node.Tag == 2, "This is a InternalNode!");
+            node.Father = BitConverter.ToInt32(bytes, 1);
+            node.ChildrenNumber = BitConverter.ToInt32(bytes, 5);
             node.Raw = bytes;
-            Buffer.BlockCopy(bytes, 8, node.Children, 0, sizeCounts * 4);
-            bytes.AsSpan().Slice(8 + sizeCounts * 4, sizeCounts * attributeLength).CopyTo(node.Values.Span.Slice(0, sizeCounts * attributeLength));
+            Buffer.BlockCopy(bytes, 9, node.Children, 0, sizeCounts * 4);
+            bytes.AsSpan().Slice(9 + sizeCounts * 4, sizeCounts * attributeLength).CopyTo(node.Values.Span.Slice(0, sizeCounts * attributeLength));
 
 
             return node;
