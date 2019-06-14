@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Collections.Generic;
 using Xunit;
 using HYBase.BufferManager;
 using HYBase.IndexManager;
@@ -20,6 +21,46 @@ namespace HYBase.UnitTests
             pagedFileManager = new PagedFileManager();
             indexManager = new IndexManager.IndexManager(pagedFileManager);
         }
+
+
+        [Fact]
+        void IndexScanTest()
+        {
+            MemoryStream m1 = new MemoryStream();
+            var index = indexManager.CreateIndex(m1, AttrType.Int, 4);
+            var lists = Enumerable.Range(0, 10000).Select(x => (x, rand.Next(), rand.Next())).Filter(x => rand.NextDouble() > 0.7 ? true : false).ToList();
+            var lists1 = lists.ToList();
+            lists1.Shuffle();
+
+            foreach (var (value, p, s) in lists)
+            {
+                index.InsertEntry(BitConverter.GetBytes(value), new RecordManager.RID(p, s));
+            }
+
+            byte[] pred = BitConverter.GetBytes(lists[1000].x);
+
+            IndexScan scan = new IndexScan();
+            scan.OpenScan(index, RecordManager.CompOp.LT, pred);
+            var l3 = new List<int>();
+            while (true)
+            {
+                var x = scan.GetNextEntry();
+                if (!x.HasValue)
+                {
+                    break;
+                }
+                l3.Add(BitConverter.ToInt32(x.Value.Item1));
+            }
+            Assert.Equal(1000, l3.Length());
+
+            l3.Sort();
+
+            Assert.Equal(lists.Take(1000).Select(x => x.x).ToList(), l3);
+
+
+        }
+
+
         [Fact]
         void IndexCreateTest()
         {
@@ -47,14 +88,14 @@ namespace HYBase.UnitTests
             index.InsertEntry(BitConverter.GetBytes(4), new RecordManager.RID(1, 4));
             index.InsertEntry(BitConverter.GetBytes(2), new RecordManager.RID(1, 5));
             {
-                var l = index.Find(BitConverter.GetBytes(10));
+                var l = index.FindFirst(BitConverter.GetBytes(10));
                 Assert.NotNull(l);
                 var (leaf, id) = l.Value;
                 Assert.Equal(1, leaf.ridPage[id]);
                 Assert.Equal(2, leaf.ridSlot[id]);
             }
             {
-                var l = index.Find(BitConverter.GetBytes(4));
+                var l = index.FindFirst(BitConverter.GetBytes(4));
                 Assert.NotNull(l);
                 var (leaf, id) = l.Value;
                 Assert.Equal(1, leaf.ridPage[id]);
@@ -85,7 +126,7 @@ namespace HYBase.UnitTests
             foreach (var (value, p, s) in lists.Take(5000))
             {
                 var ex = BitConverter.GetBytes(value);
-                var l = index.Find(ex);
+                var l = index.FindFirst(ex);
                 if (l != null)
                 {
                     var (a, b) = l.Value;
@@ -97,7 +138,7 @@ namespace HYBase.UnitTests
             foreach (var (value, p, s) in lists.Skip(5000))
             {
                 var ex = BitConverter.GetBytes(value);
-                var l = index.Find(ex);
+                var l = index.FindFirst(ex);
                 Assert.NotNull(l);
                 var (leaf, id) = l.Value;
                 var ac = leaf.Data.Get(id).ToArray();
@@ -125,7 +166,7 @@ namespace HYBase.UnitTests
             foreach (var (value, p, s) in lists)
             {
                 var ex = BitConverter.GetBytes(value);
-                var l = index.Find(ex);
+                var l = index.FindFirst(ex);
                 Assert.NotNull(l);
                 var (leaf, id) = l.Value;
                 var ac = leaf.Data.Get(id).ToArray();

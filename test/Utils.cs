@@ -6,7 +6,7 @@ namespace HYBase.UnitTests
     static class Utils
     {
         private
-          static Random rng = new Random(724523);
+          static Random rng = new Random();
 
         public
           static IList<T> Shuffle<T>(this IList<T> list)

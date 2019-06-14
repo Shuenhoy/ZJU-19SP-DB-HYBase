@@ -97,6 +97,7 @@ namespace HYBase.IndexManager
             sleaf.ChildrenNumber = r;
 
             sleaf.Next = leaf.Next;
+            sleaf.Prev = leaf.pageNum;
             leaf.Next = sleaf.pageNum;
 
             if (insertIndex >= center)
@@ -221,7 +222,34 @@ namespace HYBase.IndexManager
                 }
             }
         }
-        internal (LeafNode l, int id)? Find(byte[] key)
+        internal (LeafNode l, int id)? FindLast(byte[] key)
+        {
+            int id = fileHeader.root;
+            for (int level = 0; level < fileHeader.Height; level++)
+            {
+                var inter = GetInternalNode(id);
+                for (int i = inter.ChildrenNumber - 1; i >= 0; i--)
+                {
+                    if (i == 0 || BytesComp.Comp(key.AsSpan(), inter.Values.Get(i), fileHeader.AttributeType) >= 0)
+                    {
+                        id = inter.Children[i];
+                        break;
+                    }
+                }
+                UnPin(inter);
+            }
+            var leaf = GetLeafNode(id);
+            for (int i = leaf.ChildrenNumber; i >= 0; i--)
+            {
+                if (i == 0 || BytesComp.Comp(key.AsSpan(), leaf.Data.Get(i), fileHeader.AttributeType) >= 0)
+                {
+                    UnPin(leaf);
+                    return (leaf, i);
+                }
+            }
+            return null;
+        }
+        internal (LeafNode l, int id)? FindFirst(byte[] key)
         {
             int id = fileHeader.root;
             for (int level = 0; level < fileHeader.Height; level++)
@@ -382,11 +410,11 @@ namespace HYBase.IndexManager
             file.ForcePages();
         }
 
-        void UnPin(in InternalNode node)
+        internal void UnPin(in InternalNode node)
         {
             file.UnPin(node.pageNum);
         }
-        void UnPin(in LeafNode node)
+        internal void UnPin(in LeafNode node)
         {
             file.UnPin(node.pageNum);
         }
