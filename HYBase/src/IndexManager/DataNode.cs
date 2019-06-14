@@ -47,6 +47,7 @@ namespace HYBase.IndexManager
             Data.Delete(index);
             Array.Copy(ridSlot, index + 1, ridSlot, index, ridSlot.Length - index - 1);
             Array.Copy(ridPage, index + 1, ridPage, index, ridSlot.Length - index - 1);
+            ChildrenNumber--;
         }
 
         public override String ToString()
@@ -85,6 +86,7 @@ namespace HYBase.IndexManager
         }
         public static int GetSizeCounts(int attributeLength)
         {
+            // return 4;
             int sizeCounts = 4061 / (attributeLength + 8);
             return sizeCounts;
         }
@@ -206,6 +208,7 @@ namespace HYBase.IndexManager
         }
         public static int GetSizeCounts(int attributeLength)
         {
+            // return 4;
             int sizeCounts = (4088 - 9) / (4 + attributeLength);
             return sizeCounts;
         }

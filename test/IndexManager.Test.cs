@@ -14,7 +14,7 @@ namespace HYBase.UnitTests
     {
         PagedFileManager pagedFileManager;
         IndexManager.IndexManager indexManager;
-        static Random rand = new Random(123);
+        static Random rand = new Random();
         public IndexFileTest()
         {
             pagedFileManager = new PagedFileManager();
@@ -63,18 +63,64 @@ namespace HYBase.UnitTests
 
         }
         [Fact]
-        void IndexInsertLargeTest()
+        void IndexInsertDeleteTest()
         {
             MemoryStream m1 = new MemoryStream();
             var index = indexManager.CreateIndex(m1, AttrType.Int, 4);
-            var lists = Enumerable.Range(0, 100000).Select(x => (x, rand.Next(), rand.Next())).ToList();
-            //  lists.Shuffle();
+            var lists = Enumerable.Range(0, 10000).Select(x => (x, rand.Next(), rand.Next())).ToList();
+            lists.Shuffle();
 
             foreach (var (value, p, s) in lists)
             {
                 index.InsertEntry(BitConverter.GetBytes(value), new RecordManager.RID(p, s));
             }
+            lists.Shuffle();
 
+
+            foreach (var (value, p, s) in lists.Take(5000))
+            {
+                var ex = BitConverter.GetBytes(value);
+                index.DeleteEntry(BitConverter.GetBytes(value), new RecordManager.RID(p, s));
+            }
+            foreach (var (value, p, s) in lists.Take(5000))
+            {
+                var ex = BitConverter.GetBytes(value);
+                var l = index.Find(ex);
+                if (l != null)
+                {
+                    var (a, b) = l.Value;
+                    Assert.Equal(ex, a.Data.Get(b).ToArray());
+                }
+                else
+                    Assert.Null(l);
+            }
+            foreach (var (value, p, s) in lists.Skip(5000))
+            {
+                var ex = BitConverter.GetBytes(value);
+                var l = index.Find(ex);
+                Assert.NotNull(l);
+                var (leaf, id) = l.Value;
+                var ac = leaf.Data.Get(id).ToArray();
+                Assert.Equal(ex, ac);
+                Assert.Equal(p, leaf.ridPage[id]);
+                Assert.Equal(s, leaf.ridSlot[id]);
+            }
+        }
+        [Fact]
+        void IndexInsertLargeTest()
+        {
+            MemoryStream m1 = new MemoryStream();
+            var index = indexManager.CreateIndex(m1, AttrType.Int, 4);
+            var lists = Enumerable.Range(0, 10000).Select(x => (x, rand.Next(), rand.Next())).ToList();
+            lists.Shuffle();
+
+            foreach (var (value, p, s) in lists)
+            {
+                index.InsertEntry(BitConverter.GetBytes(value), new RecordManager.RID(p, s));
+            }
+            lists.Shuffle();
+
+            // index.PrintAllKeysDEBUG();
 
             foreach (var (value, p, s) in lists)
             {
