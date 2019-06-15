@@ -14,6 +14,7 @@ namespace HYBase.RecordManager
         public int recordSize;
         public int numberPages;
         public int FirstFree;
+        public int increaseKey;
     }
 
     public class RecordFile
@@ -49,7 +50,7 @@ namespace HYBase.RecordManager
         }
         public int IncreaseKey()
         {
-            throw new NotImplementedException();
+            return fileHeader.increaseKey;
         }
         public Record GetRec(RID rid)
         {
@@ -83,6 +84,7 @@ namespace HYBase.RecordManager
         }
         public RID InsertRec(byte[] data)
         {
+            fileHeader.increaseKey++;
             if (fileHeader.FirstFree == -1)
             {
                 var page = AllocatePage();
@@ -115,6 +117,7 @@ namespace HYBase.RecordManager
                 }
             }
             throw new NotImplementedException();
+
         }
         internal void UnPin(in RecordFilePage page)
         {
@@ -142,6 +145,8 @@ namespace HYBase.RecordManager
             {
                 page.Data.Set(rec.Rid.SlotID, rec.Data.AsSpan());
             }
+            SetPage(page);
+            UnPin(page);
         }
         public void ForcePages(int pageNum)
         {

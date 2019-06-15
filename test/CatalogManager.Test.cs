@@ -50,6 +50,12 @@ namespace HYBase.UnitTests
             Assert.True(catalogManager.ColumnExist("test", "id2"));
             Assert.True(catalogManager.ColumnExist("test", "name"));
 
+            var attr = catalogManager.GetColumn("test", "id2").Value;
+            Assert.Equal(AttrType.Int, attr.attributeType);
+            Assert.Equal(4, attr.attributeLength);
+
+
+
             Assert.False(catalogManager.ColumnExist("test", "id3"));
             Assert.False(catalogManager.ColumnExist("test", "name4"));
 
@@ -61,6 +67,15 @@ namespace HYBase.UnitTests
 
             var attrs1 = catalogManager.GetAttributes("test");
             Assert.Equal(2, attrs1.Length);
+
+            Assert.False(catalogManager.IndexExist("test", "id2"));
+            Assert.False(catalogManager.IndexExist("test_id2_index"));
+
+            catalogManager.CreateIndex("test", "id2", "test_id2_index");
+
+            Assert.True(catalogManager.IndexExist("test", "id2"));
+            Assert.True(catalogManager.IndexExist("test_id2_index"));
+
 
 
         }

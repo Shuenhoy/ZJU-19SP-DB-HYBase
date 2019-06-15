@@ -51,6 +51,8 @@ namespace HYBase.CatalogManager
                     attr.indexNo = catalog.indexID;
                     r.Data = StructureToByteArray(attr);
                     attrCatalog.UpdateRec(r);
+
+
                     indexCatalog.InsertRec(StructureToByteArray(catalog));
                     scan.CloseScan();
                     return catalog.indexID;
@@ -117,6 +119,55 @@ namespace HYBase.CatalogManager
             scan.CloseScan();
             return false;
         }
+        public bool IndexExist(String tableName, String columnName)
+        {
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (BytesToString(attr.attributeName) == columnName)
+                {
+                    scan.CloseScan();
+                    if (attr.indexNo < 0) return false;
+                    return true;
+                }
+            }
+            scan.CloseScan();
+            throw new Exception("no such column!");
+        }
+        public bool IndexExist(string indexName)
+        {
+            Record r;
+            scan.OpenScan(indexCatalog, 32, 64, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(indexName));
+
+            while (scan.NextRecord(out r))
+            {
+
+                scan.CloseScan();
+                return true;
+            }
+            return false;
+
+        }
+        public AttributeCatalog? GetColumn(string tableName, String columnName)
+        {
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (BytesToString(attr.attributeName) == columnName)
+                {
+                    scan.CloseScan();
+                    return attr;
+                }
+            }
+            scan.CloseScan();
+            return null;
+        }
         public bool ColumnExist(String tableName, String columnName)
         {
             scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
@@ -152,6 +203,7 @@ namespace HYBase.CatalogManager
                     while (scan.NextRecord(out r))
                     {
                         index = ByteArrayToStructure<IndexCatalog>(r.Data);
+                        scan.CloseScan();
                         return true;
                     }
                     return true;
