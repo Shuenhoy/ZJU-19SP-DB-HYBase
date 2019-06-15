@@ -1,10 +1,18 @@
 using System;
 using System.Runtime.InteropServices;
+using System.Text;
+using System.Linq;
 
 namespace HYBase.Utils
 {
     public static partial class Utils
     {
+        public static string BytesToString(byte[] bytes)
+        {
+            var length = bytes.TakeWhile(b => b != 0).Count();
+            return Encoding.UTF8.GetString(bytes, 0, length);
+
+        }
         public static unsafe T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
             fixed (byte* ptr = &bytes[0])

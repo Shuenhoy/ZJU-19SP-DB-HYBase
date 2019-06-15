@@ -138,12 +138,12 @@ namespace HYBase.UnitTests
             header[6] = 1;
             pf.SetHeader(header);
             byte[] bytes = new byte[4096 - 16];
-            m.Seek(16, SeekOrigin.Begin);
+            m.Seek(12, SeekOrigin.Begin);
             m.Read(bytes, 0, 4096 - 16);
             Assert.Equal(header, pf.GetHeader());
             Assert.False(Enumerable.SequenceEqual(bytes, header));
             pf.WriteHeader();
-            m.Seek(16, SeekOrigin.Begin);
+            m.Seek(12, SeekOrigin.Begin);
             m.Read(bytes, 0, 4096 - 16);
             Assert.Equal(header, bytes);
 

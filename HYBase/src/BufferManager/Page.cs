@@ -16,14 +16,16 @@ namespace HYBase.BufferManager
         public byte[] data;
 
     }
-    [StructLayout(LayoutKind.Explicit, Size = 4096)]
+    [StructLayout(LayoutKind.Sequential, Size = 4096, Pack = 1)]
     public struct PagedFileHeader
     {
-        [FieldOffset(0)]
+        //    [FieldOffset(0)]
         public int firstFree;
-        [FieldOffset(8)]
+        //    [FieldOffset(4)]
         public int numPages;
-        [FieldOffset(16)]
+        //    [FieldOffset(8)]
+        public int Init;
+        //[FieldOffset(14)]
 
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4096 - 16)]
         public byte[] data;

@@ -58,7 +58,11 @@ namespace HYBase.RecordManager
             pageNum = 0;
             stop = false;
             attributeType = attrType;
-
+            if (file.fileHeader.numberPages == 0)
+            {
+                stop = true;
+                return;
+            }
             var data = page.Data.Get(id);
             var values = data.Slice(attributeOffset, attributeLength);
             var ret = new Record(data.ToArray(), new RID(pageNum, id));

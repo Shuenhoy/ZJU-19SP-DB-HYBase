@@ -1,9 +1,11 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Collections.Generic;
 using HYBase.RecordManager;
 using static HYBase.Utils.Utils;
 using System.Text;
+using System.Runtime.InteropServices;
 
 namespace HYBase.CatalogManager
 {
@@ -23,6 +25,15 @@ namespace HYBase.CatalogManager
             indexCatalog = rm.OpenFile(indexcat);
             scan = new RecordManager.FileScan();
         }
+        public CatalogManager() { }
+        public void Init(RecordManager.RecordManager rm, Stream relcat, Stream attrcat, Stream indexcat)
+        {
+            relCatalog = rm.CreateFile(relcat, Marshal.SizeOf<RelationCatalog>());
+            attrCatalog = rm.CreateFile(attrcat, Marshal.SizeOf<AttributeCatalog>());
+            indexCatalog = rm.CreateFile(indexcat, Marshal.SizeOf<IndexCatalog>());
+            scan = new RecordManager.FileScan();
+        }
+
         public int CreateIndex(String tableName, String columnName, String indexName)
         {
 
@@ -34,15 +45,9 @@ namespace HYBase.CatalogManager
             {
 
                 var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
-                if (attr.attributeName == columnName)
+                if (BytesToString(attr.attributeName) == columnName)
                 {
-                    var catalog = new IndexCatalog
-                    {
-                        relationName = tableName,
-                        attributeName = columnName,
-                        indexName = indexName,
-                        indexID = indexCatalog.IncreaseKey()
-                    };
+                    var catalog = new IndexCatalog(tableName, columnName, indexName, indexCatalog.IncreaseKey());
                     attr.indexNo = catalog.indexID;
                     r.Data = StructureToByteArray(attr);
                     attrCatalog.UpdateRec(r);
@@ -57,19 +62,13 @@ namespace HYBase.CatalogManager
         }
         public void CreateTable(String tableName, AttributeInfo[] attributes)
         {
-            var catalog = new RelationCatalog { relationName = tableName, attrCount = attributes.Length, indexCount = 0 };
+            var catalog = new RelationCatalog(tableName, attributes.Length, 0);
             relCatalog.InsertRec(StructureToByteArray(catalog));
             int offset = 0;
             foreach (var attr in attributes)
             {
-                var attrcatalog = new AttributeCatalog
-                {
-                    relationName = tableName,
-                    attributeName = attr.AttributeName,
-                    attributeLength = attr.AttributeLength,
-                    attributeType = attr.type,
-                    offset = offset
-                };
+                var attrcatalog = new AttributeCatalog(tableName, attr.AttributeName, offset, attr.type, attr.AttributeLength, -1);
+
                 offset += attr.AttributeLength;
                 attrCatalog.InsertRec(StructureToByteArray(attrcatalog));
             }
@@ -126,7 +125,7 @@ namespace HYBase.CatalogManager
             while (scan.NextRecord(out r))
             {
                 var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
-                if (attr.attributeName == columnName)
+                if (BytesToString(attr.attributeName) == columnName)
                 {
                     scan.CloseScan();
                     return true;
@@ -143,7 +142,7 @@ namespace HYBase.CatalogManager
             while (scan.NextRecord(out r))
             {
                 var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
-                if (attr.attributeName == columnName)
+                if (BytesToString(attr.attributeName) == columnName)
                 {
                     scan.CloseScan();
                     index = null;
