@@ -5,7 +5,11 @@ namespace HYBase.RecordManager
 {
     public class Record
     {
-        public Record() { throw new NotImplementedException(); }
+        public Record(byte[] data, RID rid)
+        {
+            Data = data;
+            Rid = rid;
+        }
         public byte[] Data;
         public readonly RID Rid;
 

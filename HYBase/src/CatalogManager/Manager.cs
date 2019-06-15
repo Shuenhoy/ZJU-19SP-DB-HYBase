@@ -3,6 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using HYBase.RecordManager;
 using static HYBase.Utils.Utils;
+using System.Text;
 
 namespace HYBase.CatalogManager
 {
@@ -27,10 +28,11 @@ namespace HYBase.CatalogManager
 
             Record r;
 
-            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
 
             while (scan.NextRecord(out r))
             {
+
                 var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
                 if (attr.attributeName == columnName)
                 {
@@ -74,15 +76,16 @@ namespace HYBase.CatalogManager
         }
         public void DropTable(String tableName)
         {
-            scan.OpenScan(relCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(relCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {
                 relCatalog.DeleteRec(r.Rid);
             }
             scan.CloseScan();
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
 
-            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
             while (scan.NextRecord(out r))
             {
                 attrCatalog.DeleteRec(r.Rid);
@@ -91,7 +94,8 @@ namespace HYBase.CatalogManager
         }
         public void DropIndex(String tableName)
         {
-            scan.OpenScan(indexCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(indexCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {
@@ -103,7 +107,8 @@ namespace HYBase.CatalogManager
         }
         public bool TableExist(String tableName)
         {
-            scan.OpenScan(relCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(relCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {
@@ -115,7 +120,8 @@ namespace HYBase.CatalogManager
         }
         public bool ColumnExist(String tableName, String columnName)
         {
-            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {
@@ -131,7 +137,8 @@ namespace HYBase.CatalogManager
         }
         public bool GetIndex(String tableName, String columnName, out IndexCatalog? index)
         {
-            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {
@@ -141,7 +148,8 @@ namespace HYBase.CatalogManager
                     scan.CloseScan();
                     index = null;
                     if (attr.indexNo < 0) return false;
-                    scan.OpenScan(indexCatalog, 4, 48, CompOp.EQ, attr.indexNo);
+                    scan.OpenScan(indexCatalog, 4, 48, AttrType.Int, CompOp.EQ, BitConverter.GetBytes(attr.indexNo));
+
                     while (scan.NextRecord(out r))
                     {
                         index = ByteArrayToStructure<IndexCatalog>(r.Data);
@@ -156,7 +164,8 @@ namespace HYBase.CatalogManager
         public AttributeCatalog[] GetAttributes(String tableName)
         {
             List<AttributeCatalog> attrs = new List<AttributeCatalog>();
-            scan.OpenScan(attrCatalog, 32, 0, CompOp.EQ, tableName);
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
             Record r;
             while (scan.NextRecord(out r))
             {

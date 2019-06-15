@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using HYBase.BufferManager;
 
 namespace HYBase.RecordManager
 {
@@ -8,19 +9,22 @@ namespace HYBase.RecordManager
     /// </summary>
     class RecordManager
     {
+        PagedFileManager manager;
         public RecordManager(BufferManager.PagedFileManager pagedManager)
         {
-            throw new NotImplementedException();
+            manager = pagedManager;
         }
 
         public RecordFile CreateFile(Stream file, int recordSize)
         {
-            throw new NotImplementedException();
+            var record = new RecordFile(manager.CreateFile(file), recordSize);
+            return record;
         }
 
         public RecordFile OpenFile(Stream file)
         {
-            throw new NotImplementedException();
+            var record = new RecordFile(manager.OpenFile(file));
+            return record;
         }
         public void DestoryFile(Stream file)
         {
