@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Linq;
 using System.Collections.Generic;
 using Xunit;
@@ -103,6 +104,54 @@ namespace HYBase.UnitTests
             }
 
         }
+
+
+        [Fact]
+        void IndexInsertDeleteStringTest()
+        {
+            MemoryStream m1 = new MemoryStream();
+            var index = indexManager.CreateIndex(m1, AttrType.String, 6);
+            var lists = Enumerable.Range(0, 10000).Select(x => (Utils.RandomString(6), rand.Next(), rand.Next())).ToList();
+            lists.Shuffle();
+
+            foreach (var (value, p, s) in lists)
+            {
+                index.InsertEntry(Encoding.UTF8.GetBytes(value), new RecordManager.RID(p, s));
+            }
+            lists.Shuffle();
+
+
+            foreach (var (value, p, s) in lists.Take(5000))
+            {
+                var ex = Encoding.UTF8.GetBytes(value);
+                index.DeleteEntry(ex, new RecordManager.RID(p, s));
+            }
+            foreach (var (value, p, s) in lists.Take(5000))
+            {
+                var ex = Encoding.UTF8.GetBytes(value);
+                var l = index.FindFirst(ex);
+                if (l != null)
+                {
+                    var (a, b) = l.Value;
+                    Assert.Equal(Encoding.UTF8.GetString(ex), Encoding.UTF8.GetString(a.Data.Get(b)));
+                }
+                else
+                    Assert.Null(l);
+            }
+            foreach (var (value, p, s) in lists.Skip(5000))
+            {
+                var ex = Encoding.UTF8.GetBytes(value);
+                var l = index.FindFirst(ex);
+                Assert.NotNull(l);
+                var (leaf, id) = l.Value;
+                var ac = leaf.Data.Get(id).ToArray();
+                Assert.Equal(Encoding.UTF8.GetString(ex), Encoding.UTF8.GetString(ac));
+
+                Assert.Equal(p, leaf.ridPage[id]);
+                Assert.Equal(s, leaf.ridSlot[id]);
+            }
+        }
+
         [Fact]
         void IndexInsertDeleteTest()
         {

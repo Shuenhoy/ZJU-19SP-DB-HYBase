@@ -16,8 +16,8 @@ namespace HYBase.UnitTests
     struct record
     {
         public int a, b;
-        [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 6)]
-        public string str;
+        [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
+        public byte[] str;
     }
     public class RecordTest
     {
@@ -34,14 +34,14 @@ namespace HYBase.UnitTests
         void FileScanTest()
         {
             MemoryStream m1 = new MemoryStream();
-            var record = recordManager.CreateFile(m1, 14);
-            var lists = Enumerable.Range(0, 10000).Select(x => (x, rand.Next(), Utils.RandomString(5))).Filter(x => rand.NextDouble() > 0.7 ? true : false).ToList();
+            var record = recordManager.CreateFile(m1, 15);
+            var lists = Enumerable.Range(0, 10000).Select(x => (x, rand.Next(), Utils.RandomString(6))).Filter(x => rand.NextDouble() > 0.7 ? true : false).ToList();
             var lists1 = lists.ToList();
             lists1.Shuffle();
 
             foreach (var (p, s, str) in lists)
             {
-                record.InsertRec(StructureToByteArray(new record { a = p, b = s, str = str }));
+                record.InsertRec(StructureToByteArray(new record { a = p, b = s, str = Encoding.UTF8.GetBytes(str) }));
             }
 
 
@@ -113,7 +113,7 @@ namespace HYBase.UnitTests
                     }
                     var rec = ByteArrayToStructure<record>(x.Data);
 
-                    l3.Add(rec.str);
+                    l3.Add(Encoding.UTF8.GetString(rec.str));
                 }
 
                 l3.Sort();
