@@ -57,6 +57,7 @@ namespace HYBase.System
                 try
                 {
                     interpreter.Exec(line);
+                    api.ForcePages();
                 }
                 catch (Exception ex)
                 {

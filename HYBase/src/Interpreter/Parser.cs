@@ -204,7 +204,7 @@ namespace HYBase.Interpreter
             from _0 in either(eof, spaces1)
             select Seq<Command>();
         internal static Parser<Command[]> commands =
-            from cs in either(many1(choice(execfile, quit, insert, attempt(createIndex), createTable, attempt(dropTable), dropIndex, selects)), nothing)
+            from cs in either(many1(choice(execfile, quit, insert, attempt(createIndex), createTable, attempt(delete), attempt(dropTable), dropIndex, selects)), nothing)
             select cs.ToArray();
         public static Command[] Parse(string input)
         {

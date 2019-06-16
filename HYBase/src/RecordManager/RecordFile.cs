@@ -22,6 +22,7 @@ namespace HYBase.RecordManager
 
         internal RecordFileHeader fileHeader;
         internal PagedFile file;
+        bool headerChanged;
         public RecordFile(PagedFile f, int recordSize)
         {
             fileHeader = new RecordFileHeader
@@ -30,6 +31,7 @@ namespace HYBase.RecordManager
                 numberPages = 0,
                 FirstFree = -1
             };
+            headerChanged = true;
             file = f;
         }
         public RecordFile(PagedFile f)
@@ -40,12 +42,17 @@ namespace HYBase.RecordManager
         }
         internal void WriteHeader()
         {
-            file.SetHeader(Utils.Utils.StructureToByteArray(fileHeader));
+            if (headerChanged)
+            {
+                file.SetHeader(Utils.Utils.StructureToByteArray(fileHeader));
+            }
+            headerChanged = false;
         }
 
         public void Close()
         {
             WriteHeader();
+            file.WriteHeader();
             file.Close();
         }
         public int IncreaseKey()
@@ -67,6 +74,7 @@ namespace HYBase.RecordManager
             page.Raw = file.GetPageData(page.pageNum);
 
             fileHeader.numberPages++;
+            headerChanged = true;
 
             return page;
         }
@@ -85,10 +93,13 @@ namespace HYBase.RecordManager
         public RID InsertRec(byte[] data)
         {
             fileHeader.increaseKey++;
+            headerChanged = true;
             if (fileHeader.FirstFree == -1)
             {
                 var page = AllocatePage();
                 fileHeader.FirstFree = page.pageNum;
+                fileHeader.numberPages++;
+                headerChanged = true;
                 page.Valid[0] = true;
                 page.RecordNum++;
                 page.Data.Set(0, data.AsSpan());
@@ -111,6 +122,7 @@ namespace HYBase.RecordManager
                         if (page.RecordNum == page.Valid.Length)
                         {
                             fileHeader.FirstFree = page.NextFree;
+                            headerChanged = true;
                         }
                         return new RID(page.pageNum, i);
                     }
@@ -133,6 +145,7 @@ namespace HYBase.RecordManager
                 page.RecordNum--;
                 page.NextFree = fileHeader.FirstFree;
                 fileHeader.FirstFree = page.pageNum;
+                headerChanged = true;
                 SetPage(page);
                 UnPin(page);
             }
@@ -148,9 +161,10 @@ namespace HYBase.RecordManager
             SetPage(page);
             UnPin(page);
         }
-        public void ForcePages(int pageNum)
+        public void ForcePages()
         {
             WriteHeader();
+            file.WriteHeader();
             file.ForcePages();
         }
     }

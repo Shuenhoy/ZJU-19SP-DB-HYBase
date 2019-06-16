@@ -17,7 +17,12 @@ namespace HYBase.CatalogManager
     {
         RecordFile relCatalog, attrCatalog, indexCatalog;
         FileScan scan;
-
+        public void ForcePages()
+        {
+            relCatalog.ForcePages();
+            attrCatalog.ForcePages();
+            indexCatalog.ForcePages();
+        }
         public CatalogManager(RecordManager.RecordManager rm, Stream relcat, Stream attrcat, Stream indexcat)
         {
             relCatalog = rm.OpenFile(relcat);

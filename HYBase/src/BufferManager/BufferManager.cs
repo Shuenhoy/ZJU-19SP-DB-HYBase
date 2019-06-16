@@ -148,6 +148,21 @@ namespace HYBase.BufferManager
                WritePage(file, pageNum, node.Value.value.page);
            });
         }
+        public void ForceAllPages()
+        {
+            foreach (var page in used)
+            {
+
+                if (page.value.Dirty)
+                {
+                    WritePage(page.key.file, page.key.pageNum, page.value.page);
+                    page.key.file.Flush();
+                    page.value.Dirty = false;
+                }
+
+
+            }
+        }
         public void ForcePages(Stream file)
         {
             foreach (var page in used)
@@ -170,7 +185,7 @@ namespace HYBase.BufferManager
                node.Value.value.PinCount--;
                if (node.Value.value.PinCount == 0)
                {
-                   node.Value.value.Dirty = true;
+                   // node.Value.value.Dirty = true;
                    used.Remove(node);
                    used.AddFirst(node);
                }
@@ -252,6 +267,7 @@ namespace HYBase.BufferManager
             int offset = pageNum * BufferBlock.SIZE + BufferBlock.SIZE;
             file.Seek(offset, SeekOrigin.Begin);
             file.Write(StructureToByteArray(data), 0, BufferBlock.SIZE);
+            file.Flush();
         }
 
     }

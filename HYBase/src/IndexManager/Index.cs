@@ -275,7 +275,7 @@ namespace HYBase.IndexManager
                     return (leaf, i);
                 }
             }
-            return null;
+            return (leaf, leaf.ChildrenNumber - 1);
         }
         public int FirstLeaf()
         {
@@ -408,6 +408,7 @@ namespace HYBase.IndexManager
         public void ForcePages()
         {
             WriteHeader();
+            file.WriteHeader();
             file.ForcePages();
         }
 

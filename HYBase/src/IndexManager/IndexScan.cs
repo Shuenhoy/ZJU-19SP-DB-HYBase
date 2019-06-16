@@ -97,7 +97,30 @@ namespace HYBase.IndexManager
                 else
                 {
                     state = ScanState.Backward;
-                    if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) == 0) Backward();
+                    if (id < 0)
+                    {
+                        index.UnPin(l);
+
+                        if (l.Prev == -1)
+                        {
+                            if (op == CompOp.NE)
+                            {
+                                state = ScanState.Forward;
+                                (l, id) = index.FindLast(compValue).Value;
+                                if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), index.fileHeader.AttributeType) == 0) Forward();
+                            }
+                            else
+                            {
+                                state = ScanState.Stop;
+                            }
+                        }
+                        else
+                        {
+                            l = index.GetLeafNode(l.Prev);
+                            id = l.ChildrenNumber - 1;
+                        }
+                    }
+                    else if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) == 0) Backward();
 
 
                 }

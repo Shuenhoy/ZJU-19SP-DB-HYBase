@@ -31,6 +31,10 @@ namespace HYBase.BufferManager
 
             return pfile;
         }
+        public void ForceAllPages()
+        {
+            buffer.ForceAllPages();
+        }
         /// <summary>
         /// 打开已有的分页文件
         /// </summary>

@@ -29,7 +29,18 @@ namespace HYBase.System
             tables = new Dictionary<string, RecordFile>();
             indexs = new Dictionary<string, Index>();
         }
-
+        public void ForcePages()
+        {
+            system.catalogManager.ForcePages();
+            foreach (var t in tables.Values)
+            {
+                t.ForcePages();
+            }
+            foreach (var i in indexs.Values)
+            {
+                i.ForcePages();
+            }
+        }
         static (AttrType, int) GetType(string type)
         {
             switch (type)
