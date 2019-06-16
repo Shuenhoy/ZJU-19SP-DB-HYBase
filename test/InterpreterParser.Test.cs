@@ -105,13 +105,15 @@ namespace HYBase.UnitTests
             var str2 = @"select * from student where sno = '88\'11'  ;";
             var result2 = parse(InterpreterParser.selects, str2);
             Faulted(result2);
-            var real2 = new Select("student", new[] { new Condition("sno", CompOp.EQ, Encoding.UTF8.GetBytes("88'11")) });
+            var real2 = new Select("student", new[] { new Condition("sno", CompOp.EQ, (Encoding.UTF8.GetBytes("88'11"), AttrType.String)) });
             Assert.Equal(real2, result2.Reply.Result);
 
             var str3 = @"select * from student where sage > 20  and sgender = 'F';";
             var result3 = parse(InterpreterParser.selects, str3);
             Faulted(result3);
-            var real3 = new Select("student", new[] { new Condition("sage", CompOp.GT, BitConverter.GetBytes(20)), new Condition("sgender", CompOp.EQ, Encoding.UTF8.GetBytes("F")) });
+            var real3 = new Select("student", new[] { new Condition("sage", CompOp.GT,
+                (BitConverter.GetBytes(20), AttrType.Int)),
+                new Condition("sgender", CompOp.EQ, (Encoding.UTF8.GetBytes("F"),AttrType.String) ) });
             Assert.Equal(real3, result3.Reply.Result);
 
         }
@@ -122,7 +124,11 @@ namespace HYBase.UnitTests
             var str1 = @"insert  into  student values('12345678','wy',22,'M');";
             var result1 = parse(InterpreterParser.insert, str1);
             Faulted(result1);
-            var real1 = new Insert("student", new byte[][] { Encoding.UTF8.GetBytes("12345678"), Encoding.UTF8.GetBytes("wy"), BitConverter.GetBytes(22), Encoding.UTF8.GetBytes("M") });
+            var real1 = new Insert("student", new (byte[], AttrType)[] {
+                 (Encoding.UTF8.GetBytes("12345678"),AttrType.String),
+                 (Encoding.UTF8.GetBytes("wy"),AttrType.String),
+                 (BitConverter.GetBytes(22),AttrType.Int),
+                 (Encoding.UTF8.GetBytes("M"),AttrType.String) });
             Assert.Equal(real1, result1.Reply.Result);
         }
 
@@ -138,13 +144,14 @@ namespace HYBase.UnitTests
             var str2 = @"delete  from student where sno = '88\'11';";
             var result2 = parse(InterpreterParser.delete, str2);
             Faulted(result2);
-            var real2 = new Delete("student", new[] { new Condition("sno", CompOp.EQ, Encoding.UTF8.GetBytes("88'11")) });
+            var real2 = new Delete("student", new[] { new Condition("sno", CompOp.EQ, (Encoding.UTF8.GetBytes("88'11"), AttrType.String)) });
             Assert.Equal(real2, result2.Reply.Result);
 
             var str3 = @"delete from student where sage > 20  and sgender = 'F' ;";
             var result3 = parse(InterpreterParser.delete, str3);
             Faulted(result3);
-            var real3 = new Delete("student", new[] { new Condition("sage", CompOp.GT, BitConverter.GetBytes(20)), new Condition("sgender", CompOp.EQ, Encoding.UTF8.GetBytes("F")) });
+            var real3 = new Delete("student", new[] { new Condition("sage", CompOp.GT, (BitConverter.GetBytes(20), AttrType.Int)),
+            new Condition("sgender", CompOp.EQ, (Encoding.UTF8.GetBytes("F"),AttrType.String)) });
             Assert.Equal(real3, result3.Reply.Result);
 
         }

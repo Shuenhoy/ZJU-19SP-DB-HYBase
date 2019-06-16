@@ -1,5 +1,8 @@
 using System;
 using HYBase.System;
+using Newtonsoft.Json.Linq;
+using Newtonsoft.Json;
+
 
 namespace HYBase.Interpreter
 {
@@ -22,7 +25,8 @@ namespace HYBase.Interpreter
             switch (command)
             {
                 case Select s:
-                    api.Select(s);
+                    var res = api.Select(s);
+                    Console.WriteLine(res.ToString(Formatting.Indented));
                     break;
                 case CreateTable c:
                     api.CreateTable(c);
@@ -32,6 +36,9 @@ namespace HYBase.Interpreter
                     break;
                 case DropTable d:
                     api.DropTable(d);
+                    break;
+                case Insert i:
+                    api.Insert(i);
                     break;
                 case DropIndex d:
                     api.DropIndex(d);

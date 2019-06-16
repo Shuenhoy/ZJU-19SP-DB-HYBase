@@ -62,9 +62,9 @@ namespace HYBase.CatalogManager
             scan.CloseScan();
             throw new Exception("no such index");
         }
-        public void CreateTable(String tableName, AttributeInfo[] attributes)
+        public void CreateTable(String tableName, AttributeInfo[] attributes, int recordLength)
         {
-            var catalog = new RelationCatalog(tableName, attributes.Length, 0);
+            var catalog = new RelationCatalog(tableName, attributes.Length, recordLength);
             relCatalog.InsertRec(StructureToByteArray(catalog));
             int offset = 0;
             foreach (var attr in attributes)
@@ -134,6 +134,25 @@ namespace HYBase.CatalogManager
             }
             scan.CloseScan();
             return false;
+        }
+        public RelationCatalog? GetTable(String tableName)
+        {
+            scan.OpenScan(relCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                scan.CloseScan();
+                return ByteArrayToStructure<RelationCatalog>(r.Data);
+            }
+            scan.CloseScan();
+            return null;
+        }
+        public void CloseAll()
+        {
+            attrCatalog.Close();
+            relCatalog.Close();
+            indexCatalog.Close();
         }
         public bool IndexExist(String tableName, String columnName)
         {

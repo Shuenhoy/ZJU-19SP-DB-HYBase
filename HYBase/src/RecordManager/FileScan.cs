@@ -92,10 +92,10 @@ namespace HYBase.RecordManager
                 return;
             }
             op = CompOp.NO;
-            do
+            while (!page.Valid[id])
             {
                 if (!Forward()) break;
-            } while (!page.Valid[id]);
+            }
 
         }
         public void CloseScan()

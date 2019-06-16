@@ -21,8 +21,11 @@ namespace HYBase.System
         IDictionary<string, RecordFile> tables;
         IDictionary<string, Index> indexs;
 
-        public API()
+        public API(DataBaseSystem sys)
         {
+            system = sys;
+            fileScan = new FileScan();
+            indexScan = new IndexScan();
             tables = new Dictionary<string, RecordFile>();
             indexs = new Dictionary<string, Index>();
         }
@@ -58,11 +61,12 @@ namespace HYBase.System
                               var (t, l) = GetType(type);
                               return new AttributeInfo(t, name, l);
                           }).ToArray();
-            system.catalogManager.CreateTable(command.TableName, attributes);
+            int recordLenth = attributes.Aggregate(0, (x, y) => x + y.AttributeLength);
+            system.catalogManager.CreateTable(command.TableName, attributes, recordLenth);
 
             tables[command.TableName] = system.recoardManager.CreateFile(
                 new FileStream($"table/{command.TableName}", FileMode.OpenOrCreate, FileAccess.ReadWrite),
-                    attributes.Aggregate(0, (x, y) => x + y.AttributeLength)
+                    recordLenth
                 );
 
             // 1 使用 system.catalogManager.TableExist 是否存在，存在则throw 异常
@@ -155,6 +159,42 @@ namespace HYBase.System
                 return rec.First();
             }
         }
+        public void Insert(Interpreter.Insert command)
+        {
+            var table = system.catalogManager.GetTable(command.TableName);
+            if (!table.HasValue)
+            {
+                throw new Exception("no such table!");
+            }
+            byte[] rec = new byte[table.Value.recordLength];
+            var attributes = system.catalogManager.GetAttributes(command.TableName);
+            if (command.Values.Length() != attributes.Length)
+            {
+                throw new Exception($"incorrect number of values! Expected {attributes.Length} but got {command.Values.Length()}");
+            }
+            for (int i = 0; i < attributes.Length; i++)
+            {
+                if (attributes[i].attributeType != command.Values[i].Item2)
+                {
+                    throw new Exception($"incorrect type of argument {i}! Expect {attributes[i].attributeType} but get {command.Values[i].Item2}");
+
+                }
+                if (attributes[i].attributeType == AttrType.String && command.Values[i].Item1.Length > attributes[i].attributeLength)
+                {
+                    throw new Exception($"incorrect length of argument {i}! Its length should be less or equal than {attributes[i].attributeLength}");
+                }
+            }
+            for (int i = 0; i < attributes.Length; i++)
+            {
+                Buffer.BlockCopy(command.Values[i].Item1, 0, rec, attributes[i].offset, command.Values[i].Item1.Length);
+                for (int j = command.Values[i].Item1.Length; j < attributes[i].attributeLength; j++)
+                {
+                    Buffer.SetByte(rec, attributes[i].offset + j, 0);
+                }
+            }
+            var recfile = GetRecordFile(command.TableName);
+            recfile.InsertRec(rec);
+        }
         Index GetIndex(string indexName)
         {
             var index = indexs.TryGetValue(indexName);
@@ -203,14 +243,19 @@ namespace HYBase.System
                 {
                     throw new Exception($"no such column `{c.ColumnName}` in `{command.TableName}`");
                 }
+                if (attributes[c.ColumnName].attributeType != command.Conditions[i].Value.Item2)
+                {
+                    throw new Exception(
+                        $"incorrect type of argument {i}, expected {attributes[c.ColumnName].attributeType} but got {command.Conditions[i].Value.Item2}");
+                }
                 if (attributes[c.ColumnName].indexNo != -1) main = i;
             }
             JArray objects = new JArray();
-            if (main == -1)
+            if (main != -1)
             {
                 IndexCatalog? index;
                 system.catalogManager.GetIndex(command.TableName, command.Conditions[main].ColumnName, out index);
-                indexScan.OpenScan(GetIndex(index?.IndexName), command.Conditions[main].Op, command.Conditions[main].Value);
+                indexScan.OpenScan(GetIndex(index?.IndexName), command.Conditions[main].Op, command.Conditions[main].Value.Item1);
                 var rec = GetRecordFile(command.TableName);
                 RID e;
                 Record r;
@@ -222,7 +267,7 @@ namespace HYBase.System
                     {
                         if (i == main) continue;
                         var cond = command.Conditions[i];
-                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value, cond.Op, attributes[cond.ColumnName].attributeType))
+                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value.Item1, cond.Op, attributes[cond.ColumnName].attributeType))
                         {
                             s = false;
                             break;
@@ -244,7 +289,9 @@ namespace HYBase.System
                     bool s = true;
                     foreach (var cond in command.Conditions)
                     {
-                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value, cond.Op, attributes[cond.ColumnName].attributeType))
+                        var attr = attributes[cond.ColumnName];
+                        if (!FileScan.Satisfied(r.Data.AsSpan().Slice(attr.offset, attr.attributeLength),
+                            cond.Value.Item1, cond.Op, attributes[cond.ColumnName].attributeType))
                         {
                             s = false;
                             break;
@@ -268,6 +315,15 @@ namespace HYBase.System
         }
         public void Quit(Interpreter.Quit command)
         {
+            foreach (var recfile in tables.Values)
+            {
+                recfile.Close();
+            }
+            foreach (var indexfile in indexs.Values)
+            {
+                indexfile.Close();
+            }
+            system.catalogManager.CloseAll();
             Environment.Exit(0);
         }
         public void Delete(Interpreter.Delete command)

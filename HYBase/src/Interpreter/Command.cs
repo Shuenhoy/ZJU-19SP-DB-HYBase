@@ -96,8 +96,8 @@ namespace HYBase.Interpreter
     {
         public readonly string ColumnName;
         public readonly CompOp Op;
-        public readonly byte[] Value;
-        public Condition(string columnName, CompOp op, byte[] value)
+        public readonly (byte[], AttrType) Value;
+        public Condition(string columnName, CompOp op, (byte[], AttrType) value)
             => (ColumnName, Op, Value) = (columnName, op, value);
         public override bool Equals(object obj)
         {
@@ -106,12 +106,12 @@ namespace HYBase.Interpreter
                 return false;
             }
             Condition other = (Condition)obj;
-            return ColumnName == other.ColumnName && Op == other.Op && Value.Equals(other.Value);
+            return ColumnName == other.ColumnName && Op == other.Op && Enumerable.SequenceEqual(Value.Item1, other.Value.Item1) && Value.Item2 == other.Value.Item2;
         }
 
         public override int GetHashCode()
         {
-            return HashCode.Combine(ColumnName.GetHashCode(), Op.GetHashCode(), Value.GetHashCode());
+            return HashCode.Combine(ColumnName.GetHashCode(), Op.GetHashCode(), Value.Item1.GetHashCode(), Value.Item2.GetHashCode());
         }
 
     }
@@ -140,8 +140,8 @@ namespace HYBase.Interpreter
     public class Insert : Command
     {
         public readonly string TableName;
-        public readonly Arr<byte[]> Values;
-        public Insert(string tableName, Arr<byte[]> values)
+        public readonly Arr<(byte[], AttrType)> Values;
+        public Insert(string tableName, Arr<(byte[], AttrType)> values)
             => (TableName, Values) = (tableName, values);
         public override bool Equals(object obj)
         {
@@ -150,7 +150,7 @@ namespace HYBase.Interpreter
                 return false;
             }
             Insert other = (Insert)obj;
-            return TableName == other.TableName && Enumerable.SequenceEqual(Values, other.Values);
+            return TableName == other.TableName;//&& Enumerable.SequenceEqual(Values.Select(x => x.Item1).ToArray(), other.Values.Select(x => x.Item2).ToArray());
         }
 
         public override int GetHashCode()

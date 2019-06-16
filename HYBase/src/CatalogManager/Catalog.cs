@@ -11,13 +11,13 @@ namespace HYBase.CatalogManager
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public byte[] relationName;
         public int attrCount;
-        public int indexCount;
+        public int recordLength;
 
         public RelationCatalog(string rn, int ac, int ic)
         {
             relationName = new byte[32];
             attrCount = ac;
-            indexCount = ic;
+            recordLength = ic;
             Encoding.UTF8.GetBytes(rn).CopyTo(relationName.AsSpan());
         }
     }

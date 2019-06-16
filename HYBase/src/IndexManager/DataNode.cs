@@ -9,7 +9,7 @@ using HYBase.RecordManager;
 [assembly: InternalsVisibleTo("test")]
 namespace HYBase.IndexManager
 {
-    [StructLayout(LayoutKind.Sequential, Size = 4096 - 8)]
+    [StructLayout(LayoutKind.Sequential, Size = 4096 - 16)]
     internal struct FileHeader
     {
         public AttrType AttributeType;

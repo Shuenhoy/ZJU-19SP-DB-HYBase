@@ -31,7 +31,7 @@ namespace HYBase.UnitTests
         public void CatalogManagerTest()
         {
             Assert.False(catalogManager.TableExist("test"));
-            catalogManager.CreateTable("test", new[] { new CatalogManager.AttributeInfo(AttrType.Int, "id", 4) });
+            catalogManager.CreateTable("test", new[] { new CatalogManager.AttributeInfo(AttrType.Int, "id", 4) }, 4);
             Assert.True(catalogManager.TableExist("test"));
             Assert.True(catalogManager.ColumnExist("test", "id"));
             catalogManager.DropTable("test");
@@ -40,12 +40,12 @@ namespace HYBase.UnitTests
                 new CatalogManager.AttributeInfo(AttrType.Int, "id2", 4) ,
                 new CatalogManager.AttributeInfo(AttrType.String, "name", 8) ,
 
-                });
+                }, 12);
             catalogManager.CreateTable("test2", new[] {
                 new CatalogManager.AttributeInfo(AttrType.Int, "id3", 4) ,
                 new CatalogManager.AttributeInfo(AttrType.String, "name4", 8) ,
 
-                });
+                }, 8);
             Assert.True(catalogManager.TableExist("test"));
             Assert.True(catalogManager.ColumnExist("test", "id2"));
             Assert.True(catalogManager.ColumnExist("test", "name"));

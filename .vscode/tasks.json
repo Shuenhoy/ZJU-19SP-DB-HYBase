@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/MiniSQL.csproj"
+                "${workspaceFolder}/HYBase/HYBase.csproj"
             ],
             "problemMatcher": "$tsc"
         },

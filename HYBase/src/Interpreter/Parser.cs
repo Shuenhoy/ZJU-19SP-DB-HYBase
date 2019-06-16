@@ -108,28 +108,28 @@ namespace HYBase.Interpreter
 
         internal static Parser<CompOp> op =
             choice(
-                attempt(from _ in ch('=') select CompOp.EQ),
-                attempt(from _ in str(">=") select CompOp.GE),
-                attempt(from _ in ch('>') select CompOp.GT),
-                attempt(from _ in str("<=") select CompOp.LE),
-                attempt(from _ in str("<") select CompOp.LT),
-                attempt(from _ in str("<>") select CompOp.NE));
-        internal static Parser<byte[]> intLit =
+                from _ in attempt(ch('=')) select CompOp.EQ,
+                from _ in attempt(str(">=")) select CompOp.GE,
+                from _ in attempt(ch('>')) select CompOp.GT,
+                from _ in attempt(str("<=")) select CompOp.LE,
+                from _ in attempt(str("<")) select CompOp.LT,
+                from _ in attempt(str("!=")) select CompOp.NE);
+        internal static Parser<(byte[], AttrType)> intLit =
             from d in asString(many1(digit))
-            select BitConverter.GetBytes(Int32.Parse(d));
-        internal static Parser<byte[]> floatLit =
+            select (BitConverter.GetBytes(Int32.Parse(d)), AttrType.Int);
+        internal static Parser<(byte[], AttrType)> floatLit =
             from d in asString(many1(digit))
             from _ in ch('.')
             from c in asString(many1(digit))
-            select BitConverter.GetBytes(Single.Parse(d + '.' + c));
+            select (BitConverter.GetBytes(Single.Parse(d + '.' + c)), AttrType.Float);
 
-        internal static Parser<byte[]> strLit =
+        internal static Parser<(byte[], AttrType)> strLit =
             from _0 in ch('\'')
             from x in asString(many(choice(from _1 in chain(ch('\\'), ch('\'')) select '\'', noneOf("\'"))))
             from _1 in ch('\'')
-            select Encoding.UTF8.GetBytes(x);
+            select (Encoding.UTF8.GetBytes(x), AttrType.String);
 
-        internal static Parser<byte[]> value =
+        internal static Parser<(byte[], AttrType)> value =
             choice(
                 strLit,
                 intLit,
@@ -200,8 +200,11 @@ namespace HYBase.Interpreter
             from _eoc in eoc
 
             select new ExecFile(file) as Command;
+        internal static Parser<Seq<Command>> nothing =
+            from _0 in either(eof, spaces1)
+            select Seq<Command>();
         internal static Parser<Command[]> commands =
-            from cs in many(choice(execfile, quit, createIndex, createTable, dropTable, dropIndex, selects))
+            from cs in either(many1(choice(execfile, quit, insert, attempt(createIndex), createTable, attempt(dropTable), dropIndex, selects)), nothing)
             select cs.ToArray();
         public static Command[] Parse(string input)
         {

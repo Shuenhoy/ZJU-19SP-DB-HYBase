@@ -6,7 +6,8 @@ namespace HYBase
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            System.DataBaseSystem system = new System.DataBaseSystem(args.Length == 0 ? "." : args[0]);
+            system.Repl();
         }
     }
 }

@@ -8,7 +8,7 @@ using HYBase.BufferManager;
 [assembly: InternalsVisibleTo("test")]
 namespace HYBase.RecordManager
 {
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Size = 4080, Pack = 1)]
     struct RecordFileHeader
     {
         public int recordSize;
