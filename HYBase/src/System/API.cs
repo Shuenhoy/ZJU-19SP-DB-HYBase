@@ -95,11 +95,19 @@ namespace HYBase.System
             File.Delete($"index/{command.IndexName}");
             system.catalogManager.CreateIndex(command.TableName, command.ColumnName, command.IndexName);
 
-            indexs[command.IndexName] = system.indexManager.CreateIndex(
+            var index = indexs[command.IndexName] = system.indexManager.CreateIndex(
                 new FileStream($"index/{command.IndexName}", FileMode.OpenOrCreate, FileAccess.ReadWrite),
                 attr.Value.attributeType,
                 attr.Value.attributeLength
             );
+            var recfile = GetRecordFile(command.TableName);
+            fileScan.OpenScan(recfile);
+            Record r;
+            while (!fileScan.NextRecord(out r))
+            {
+                index.InsertEntry(r.Data.AsSpan().Slice(attr.Value.offset, attr.Value.attributeLength).ToArray(),
+                    r.Rid);
+            }
 
             // 1 使用 system.catalogManager.GetIndex 检查是否已经存在索引，存在则throw 异常
             // 2 删掉 index/<indexName> 文件
@@ -193,7 +201,16 @@ namespace HYBase.System
                 }
             }
             var recfile = GetRecordFile(command.TableName);
-            recfile.InsertRec(rec);
+            var rid = recfile.InsertRec(rec);
+
+            var indexs = system.catalogManager.GetIndexs(command.TableName);
+            var attrDic = attributes.ToDictionary(x => x.AttributeName);
+            foreach (var i in indexs)
+            {
+                var index = GetIndex(i.IndexName);
+                index.InsertEntry(
+                    rec.AsSpan().Slice(attrDic[i.AttributeName].offset, attrDic[i.AttributeName].attributeLength).ToArray(), rid);
+            }
         }
         Index GetIndex(string indexName)
         {
@@ -336,7 +353,87 @@ namespace HYBase.System
             // 4.5 其他条件，则在fileScan或者indexScan的结果上暴力查询
             // 6 找到后，删除，需要注意，若有多个index，需要对每个index都执行删除操作
 
-            throw new NotImplementedException();
+            if (!system.catalogManager.TableExist(command.TableName))
+            {
+                throw new Exception("no such table!");
+            }
+            var attributes = system.catalogManager.GetAttributes(command.TableName).ToDictionary(x => x.AttributeName);
+            int main = -1;
+            for (int i = 0; i < command.Conditions.Length(); i++)
+            {
+                var c = command.Conditions[i];
+                if (!attributes.ContainsKey(c.ColumnName))
+                {
+                    throw new Exception($"no such column `{c.ColumnName}` in `{command.TableName}`");
+                }
+                if (attributes[c.ColumnName].attributeType != command.Conditions[i].Value.Item2)
+                {
+                    throw new Exception(
+                        $"incorrect type of argument {i}, expected {attributes[c.ColumnName].attributeType} but got {command.Conditions[i].Value.Item2}");
+                }
+                if (attributes[c.ColumnName].indexNo != -1) main = i;
+            }
+            if (main != -1)
+            {
+                IndexCatalog? index;
+                system.catalogManager.GetIndex(command.TableName, command.Conditions[main].ColumnName, out index);
+                indexScan.OpenScan(GetIndex(index?.IndexName), command.Conditions[main].Op, command.Conditions[main].Value.Item1);
+                var rec = GetRecordFile(command.TableName);
+                RID e;
+                Record r;
+                while (indexScan.NextEntry(out e))
+                {
+                    bool s = true;
+                    r = rec.GetRec(e);
+                    for (int i = 0; i < command.Conditions.Length(); i++)
+                    {
+                        if (i == main) continue;
+                        var cond = command.Conditions[i];
+                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value.Item1, cond.Op, attributes[cond.ColumnName].attributeType))
+                        {
+                            s = false;
+                            break;
+                        }
+                    }
+                    if (s)
+                    {
+                        var indexs = system.catalogManager.GetIndexs(command.TableName);
+
+                        foreach (var i in indexs)
+                        {
+                            var index0 = GetIndex(i.IndexName);
+                            index0.DeleteEntry(
+                                r.Data.AsSpan().Slice(attributes[i.AttributeName].offset, attributes[i.AttributeName].attributeLength).ToArray(), r.Rid);
+                        }
+                        rec.DeleteRec(r.Rid);
+                    }
+                }
+            }
+            else
+            {
+                var rec = GetRecordFile(command.TableName);
+                fileScan.OpenScan(rec);
+                Record r;
+                while (fileScan.NextRecord(out r))
+                {
+                    bool s = true;
+                    foreach (var cond in command.Conditions)
+                    {
+                        var attr = attributes[cond.ColumnName];
+                        if (!FileScan.Satisfied(r.Data.AsSpan().Slice(attr.offset, attr.attributeLength),
+                            cond.Value.Item1, cond.Op, attributes[cond.ColumnName].attributeType))
+                        {
+                            s = false;
+                            break;
+                        }
+                    }
+                    if (s)
+                    {
+                        rec.DeleteRec(r.Rid);
+
+                    }
+                }
+            }
         }
 
 

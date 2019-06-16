@@ -260,6 +260,18 @@ namespace HYBase.CatalogManager
             scan.CloseScan();
             return attrs.ToArray();
         }
+        public IndexCatalog[] GetIndexs(String tableName)
+        {
+            List<IndexCatalog> attrs = new List<IndexCatalog>();
+            scan.OpenScan(indexCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
 
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                attrs.Add(ByteArrayToStructure<IndexCatalog>(r.Data));
+            }
+            scan.CloseScan();
+            return attrs.ToArray();
+        }
     }
 }
