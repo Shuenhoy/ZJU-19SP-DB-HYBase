@@ -240,15 +240,15 @@ namespace HYBase.IndexManager
                 UnPin(inter);
             }
             var leaf = GetLeafNode(id);
-            for (int i = leaf.ChildrenNumber; i >= 0; i--)
+            for (int i = leaf.ChildrenNumber - 1; i >= 0; i--)
             {
-                if (i == 0 || BytesComp.Comp(key.AsSpan(), leaf.Data.Get(i), fileHeader.AttributeType) >= 0)
+                if (BytesComp.Comp(key.AsSpan(), leaf.Data.Get(i), fileHeader.AttributeType) >= 0)
                 {
                     UnPin(leaf);
                     return (leaf, i);
                 }
             }
-            return null;
+            return (leaf, -1);
         }
         internal (LeafNode l, int id)? FindFirst(byte[] key)
         {
@@ -275,7 +275,7 @@ namespace HYBase.IndexManager
                     return (leaf, i);
                 }
             }
-            return (leaf, leaf.ChildrenNumber - 1);
+            return (leaf, -1);
         }
         public int FirstLeaf()
         {

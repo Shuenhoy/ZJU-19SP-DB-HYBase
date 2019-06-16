@@ -25,8 +25,8 @@ namespace HYBase
                 case AttrType.String:
                     {
 
-                        string aa = Encoding.UTF8.GetString(a);
-                        string bb = Encoding.UTF8.GetString(b);
+                        string aa = Utils.Utils.BytesToString(a.ToArray());
+                        string bb = Utils.Utils.BytesToString(b.ToArray());
                         return String.Compare(aa, bb);
                     }
                 default:

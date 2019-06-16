@@ -36,6 +36,11 @@ namespace HYBase.IndexManager
                 default: throw new NotImplementedException();
             }
         }
+        public void CloseScan()
+        {
+            state = ScanState.Stop;
+            index.UnPin(l);
+        }
         void Backward()
         {
             id--;
@@ -49,11 +54,12 @@ namespace HYBase.IndexManager
                     {
                         state = ScanState.Forward;
                         (l, id) = index.FindLast(compValue).Value;
-                        if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), index.fileHeader.AttributeType) == 0) Forward();
+                        if (id == -1) CloseScan();
+                        else if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), index.fileHeader.AttributeType) == 0) Forward();
                     }
                     else
                     {
-                        state = ScanState.Stop;
+                        CloseScan();
                     }
                 }
                 else
@@ -72,7 +78,7 @@ namespace HYBase.IndexManager
                 id = 0;
                 if (l.Next == -1)
                 {
-                    state = ScanState.Stop;
+                    CloseScan();
                 }
                 else
                 {
@@ -88,7 +94,8 @@ namespace HYBase.IndexManager
             compValue = value;
             if (op == CompOp.GE || op == CompOp.LT || op == CompOp.NE)
             {
-                (l, id) = index.FindFirst(value).Value;
+                var find = index.FindFirst(value);
+                (l, id) = find.Value;
 
                 if (op == CompOp.GE)
                 {
@@ -112,7 +119,7 @@ namespace HYBase.IndexManager
                             }
                             else
                             {
-                                state = ScanState.Stop;
+                                CloseScan();
                             }
                         }
                         else
@@ -130,7 +137,8 @@ namespace HYBase.IndexManager
             {
                 state = ScanState.Forward;
                 (l, id) = index.FindLast(value).Value;
-                if (op != CompOp.LE)
+                if (id < 0) CloseScan();
+                else if (op == CompOp.GT)
                 {
                     if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) == 0) Forward();
                 }
@@ -156,8 +164,7 @@ namespace HYBase.IndexManager
             var value = l.Data.Get(id).ToArray();
             if (!satisfied(value))
             {
-                index.UnPin(l);
-                state = ScanState.Stop;
+                CloseScan();
                 return null;
             }
             var rid = new RID(l.ridPage[id], l.ridSlot[id]);
