@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.CompilerServices;
 using System.Linq;
+using System.Text;
 using LanguageExt;
 using LanguageExt.Parsec;
 using static LanguageExt.Prelude;
@@ -113,22 +114,22 @@ namespace HYBase.Interpreter
                 attempt(from _ in str("<=") select CompOp.LE),
                 attempt(from _ in str("<") select CompOp.LT),
                 attempt(from _ in str("<>") select CompOp.NE));
-        internal static Parser<object> intLit =
+        internal static Parser<byte[]> intLit =
             from d in asString(many1(digit))
-            select Int32.Parse(d) as object;
-        internal static Parser<object> floatLit =
+            select BitConverter.GetBytes(Int32.Parse(d));
+        internal static Parser<byte[]> floatLit =
             from d in asString(many1(digit))
             from _ in ch('.')
             from c in asString(many1(digit))
-            select Single.Parse(d + '.' + c) as object;
+            select BitConverter.GetBytes(Single.Parse(d + '.' + c));
 
-        internal static Parser<object> strLit =
+        internal static Parser<byte[]> strLit =
             from _0 in ch('\'')
             from x in asString(many(choice(from _1 in chain(ch('\\'), ch('\'')) select '\'', noneOf("\'"))))
             from _1 in ch('\'')
-            select x as object;
+            select Encoding.UTF8.GetBytes(x);
 
-        internal static Parser<object> value =
+        internal static Parser<byte[]> value =
             choice(
                 strLit,
                 intLit,

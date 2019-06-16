@@ -96,8 +96,8 @@ namespace HYBase.Interpreter
     {
         public readonly string ColumnName;
         public readonly CompOp Op;
-        public readonly object Value;
-        public Condition(string columnName, CompOp op, object value)
+        public readonly byte[] Value;
+        public Condition(string columnName, CompOp op, byte[] value)
             => (ColumnName, Op, Value) = (columnName, op, value);
         public override bool Equals(object obj)
         {
@@ -140,8 +140,8 @@ namespace HYBase.Interpreter
     public class Insert : Command
     {
         public readonly string TableName;
-        public readonly Arr<object> Values;
-        public Insert(string tableName, Arr<object> values)
+        public readonly Arr<byte[]> Values;
+        public Insert(string tableName, Arr<byte[]> values)
             => (TableName, Values) = (tableName, values);
         public override bool Equals(object obj)
         {

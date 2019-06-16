@@ -114,6 +114,18 @@ namespace HYBase.IndexManager
             }
 
         }
+        public bool NextEntry(out RID r)
+        {
+            var tmp = GetNextEntry();
+            if (tmp == null)
+            {
+                r = new RID { };
+
+                return false;
+            }
+            r = tmp.Value.Item2;
+            return true;
+        }
         public (byte[], RID)? GetNextEntry()
         {
             if (state == ScanState.Stop) return null;

@@ -5,7 +5,7 @@ using HYBase.Interpreter;
 using HYBase.RecordManager;
 using static HYBase.Utils.Utils;
 using System.Runtime.InteropServices;
-
+using System.Text;
 //
 using LanguageExt;
 using LanguageExt.Parsec;
@@ -105,13 +105,13 @@ namespace HYBase.UnitTests
             var str2 = @"select * from student where sno = '88\'11'  ;";
             var result2 = parse(InterpreterParser.selects, str2);
             Faulted(result2);
-            var real2 = new Select("student", new[] { new Condition("sno", CompOp.EQ, "88'11" as object) });
+            var real2 = new Select("student", new[] { new Condition("sno", CompOp.EQ, Encoding.UTF8.GetBytes("88'11")) });
             Assert.Equal(real2, result2.Reply.Result);
 
             var str3 = @"select * from student where sage > 20  and sgender = 'F';";
             var result3 = parse(InterpreterParser.selects, str3);
             Faulted(result3);
-            var real3 = new Select("student", new[] { new Condition("sage", CompOp.GT, 20 as object), new Condition("sgender", CompOp.EQ, "F" as object) });
+            var real3 = new Select("student", new[] { new Condition("sage", CompOp.GT, BitConverter.GetBytes(20)), new Condition("sgender", CompOp.EQ, Encoding.UTF8.GetBytes("F")) });
             Assert.Equal(real3, result3.Reply.Result);
 
         }
@@ -122,7 +122,7 @@ namespace HYBase.UnitTests
             var str1 = @"insert  into  student values('12345678','wy',22,'M');";
             var result1 = parse(InterpreterParser.insert, str1);
             Faulted(result1);
-            var real1 = new Insert("student", new object[] { "12345678", "wy", 22, "M" });
+            var real1 = new Insert("student", new byte[][] { Encoding.UTF8.GetBytes("12345678"), Encoding.UTF8.GetBytes("wy"), BitConverter.GetBytes(22), Encoding.UTF8.GetBytes("M") });
             Assert.Equal(real1, result1.Reply.Result);
         }
 
@@ -138,13 +138,13 @@ namespace HYBase.UnitTests
             var str2 = @"delete  from student where sno = '88\'11';";
             var result2 = parse(InterpreterParser.delete, str2);
             Faulted(result2);
-            var real2 = new Delete("student", new[] { new Condition("sno", CompOp.EQ, "88'11" as object) });
+            var real2 = new Delete("student", new[] { new Condition("sno", CompOp.EQ, Encoding.UTF8.GetBytes("88'11")) });
             Assert.Equal(real2, result2.Reply.Result);
 
             var str3 = @"delete from student where sage > 20  and sgender = 'F' ;";
             var result3 = parse(InterpreterParser.delete, str3);
             Faulted(result3);
-            var real3 = new Delete("student", new[] { new Condition("sage", CompOp.GT, 20 as object), new Condition("sgender", CompOp.EQ, "F" as object) });
+            var real3 = new Delete("student", new[] { new Condition("sage", CompOp.GT, BitConverter.GetBytes(20)), new Condition("sgender", CompOp.EQ, Encoding.UTF8.GetBytes("F")) });
             Assert.Equal(real3, result3.Reply.Result);
 
         }

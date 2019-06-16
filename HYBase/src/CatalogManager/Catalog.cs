@@ -31,6 +31,20 @@ namespace HYBase.CatalogManager
         public byte[] attributeName;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public byte[] indexName;
+        public string AttributeName
+        {
+            get
+            {
+                return Utils.Utils.BytesToString(attributeName);
+            }
+        }
+        public string IndexName
+        {
+            get
+            {
+                return Utils.Utils.BytesToString(indexName);
+            }
+        }
         public int indexID;
         public IndexCatalog(string rn, string an, string inn, int ii)
         {
@@ -50,6 +64,21 @@ namespace HYBase.CatalogManager
 
     struct AttributeCatalog
     {
+
+        public string RelationName
+        {
+            get
+            {
+                return Utils.Utils.BytesToString(relationName);
+            }
+        }
+        public string AttributeName
+        {
+            get
+            {
+                return Utils.Utils.BytesToString(attributeName);
+            }
+        }
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]
         public byte[] relationName;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 32)]

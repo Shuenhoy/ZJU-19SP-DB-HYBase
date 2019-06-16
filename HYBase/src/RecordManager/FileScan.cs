@@ -76,6 +76,28 @@ namespace HYBase.RecordManager
             }
 
         }
+
+        public void OpenScan(RecordFile file)
+        {
+
+            rec = file;
+            page = rec.GetPage(0);
+            id = 0;
+            pageNum = 0;
+            stop = false;
+
+            if (file.fileHeader.numberPages == 0)
+            {
+                stop = true;
+                return;
+            }
+            op = CompOp.NO;
+            do
+            {
+                if (!Forward()) break;
+            } while (!page.Valid[id]);
+
+        }
         public void CloseScan()
         {
             if (!stop)
@@ -90,6 +112,31 @@ namespace HYBase.RecordManager
             if (r == null)
                 return false;
             return true;
+        }
+        public static bool Satisfied(ReadOnlySpan<byte> value1, ReadOnlySpan<byte> value2, CompOp op, AttrType type)
+        {
+            switch (op)
+            {
+                case CompOp.EQ:
+                    return BytesComp.Comp(value1, value2, type) == 0;
+                case CompOp.GE:
+                    return BytesComp.Comp(value1, value2, type) >= 0;
+                case CompOp.GT:
+                    return BytesComp.Comp(value1, value2, type) > 0;
+                case CompOp.LE:
+                    return BytesComp.Comp(value1, value2, type) <= 0;
+                case CompOp.LT:
+                    return BytesComp.Comp(value1, value2, type) < 0;
+                case CompOp.NE:
+                    return BytesComp.Comp(value1, value2, type) != 0;
+                case CompOp.NO:
+                    return true;
+                default: throw new NotImplementedException();
+            }
+        }
+        public static bool Satisfied(byte[] value1, byte[] value2, CompOp op, AttrType type)
+        {
+            return Satisfied(value1.AsSpan(), value2.AsSpan(), op, type);
         }
         bool satisfied(ReadOnlySpan<byte> value)
         {
@@ -107,6 +154,8 @@ namespace HYBase.RecordManager
                     return BytesComp.Comp(value, compValue.AsSpan(), attributeType) < 0;
                 case CompOp.NE:
                     return BytesComp.Comp(value, compValue.AsSpan(), attributeType) != 0;
+                case CompOp.NO:
+                    return true;
                 default: throw new NotImplementedException();
             }
         }
@@ -134,19 +183,31 @@ namespace HYBase.RecordManager
         {
             if (stop) return null;
             var data = page.Data.Get(id);
-            var value = data.Slice(attributeOffset, attributeLength);
-            Debug.Assert(satisfied(value));
             var ret = new Record(data.ToArray(), new RID(pageNum, id));
-            int temo = 0;
-            do
+
+            if (op == CompOp.NO)
             {
-                temo++;
+                do
+                {
+                    if (!Forward()) break;
+                } while (!page.Valid[id]);
+                return ret;
+            }
+            else
+            {
+                var value = data.Slice(attributeOffset, attributeLength);
+                Debug.Assert(satisfied(value));
+                int temo = 0;
+                do
+                {
+                    temo++;
 
-                if (!Forward()) break;
-                value = page.Data.Get(id).Slice(attributeOffset, attributeLength);
-            } while (!(satisfied(value) && page.Valid[id]));
+                    if (!Forward()) break;
+                    value = page.Data.Get(id).Slice(attributeOffset, attributeLength);
+                } while (!(satisfied(value) && page.Valid[id]));
 
-            return ret;
+                return ret;
+            }
 
         }
 

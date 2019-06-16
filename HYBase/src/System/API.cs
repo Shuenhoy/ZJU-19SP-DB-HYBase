@@ -8,6 +8,8 @@ using HYBase.CatalogManager;
 using LanguageExt;
 using static LanguageExt.Prelude;
 using HYBase.IndexManager;
+using Newtonsoft.Json.Linq;
+
 namespace HYBase.System
 {
     public class API
@@ -16,8 +18,14 @@ namespace HYBase.System
         RecordManager.FileScan fileScan;
         IndexManager.IndexScan indexScan;
 
-        Dictionary<string, RecordFile> tables;
-        Dictionary<string, Index> indexs;
+        IDictionary<string, RecordFile> tables;
+        IDictionary<string, Index> indexs;
+
+        public API()
+        {
+            tables = new Dictionary<string, RecordFile>();
+            indexs = new Dictionary<string, Index>();
+        }
 
         static (AttrType, int) GetType(string type)
         {
@@ -134,16 +142,129 @@ namespace HYBase.System
             // 1 读取 command.FileName 的内容
             // 2 调用 system.interpreter.Exec
         }
-        public void Select(Interpreter.Select command)
+        RecordFile GetRecordFile(string tableName)
         {
+            var rec = tables.TryGetValue(tableName);
+            if (rec.IsNone)
+            {
+                tables[tableName] = system.recoardManager.OpenFile(new FileStream($"table/{tableName}", FileMode.OpenOrCreate, FileAccess.ReadWrite));
+                return tables[tableName];
+            }
+            else
+            {
+                return rec.First();
+            }
+        }
+        Index GetIndex(string indexName)
+        {
+            var index = indexs.TryGetValue(indexName);
+            if (index.IsNone)
+            {
+                indexs[indexName] = system.indexManager.OpenIndex(new FileStream($"index/{indexName}", FileMode.OpenOrCreate, FileAccess.ReadWrite));
+                return indexs[indexName];
+            }
+            else
+            {
+                return index.First();
+            }
+        }
+        JObject RecToObj(in Record r, IEnumerable<AttributeCatalog> attributes)
+        {
+            JObject obj = new JObject();
+            foreach (var v in attributes)
+            {
+                switch (v.attributeType)
+                {
+                    case AttrType.Float:
+                        obj.Add(v.AttributeName, new JValue(BitConverter.ToSingle(r.Data, v.offset)));
+                        break;
+                    case AttrType.Int:
+                        obj.Add(v.AttributeName, new JValue(BitConverter.ToInt32(r.Data, v.offset)));
+                        break;
+                    case AttrType.String:
+                        obj.Add(v.AttributeName, new JValue(Utils.Utils.BytesToString(r.Data, v.offset, v.attributeLength)));
+                        break;
+                }
+            }
+            return obj;
+        }
+        public JArray Select(Interpreter.Select command)
+        {
+            if (!system.catalogManager.TableExist(command.TableName))
+            {
+                throw new Exception("no such table!");
+            }
+            var attributes = system.catalogManager.GetAttributes(command.TableName).ToDictionary(x => x.AttributeName);
+            int main = -1;
+            for (int i = 0; i < command.Conditions.Length(); i++)
+            {
+                var c = command.Conditions[i];
+                if (!attributes.ContainsKey(c.ColumnName))
+                {
+                    throw new Exception($"no such column `{c.ColumnName}` in `{command.TableName}`");
+                }
+                if (attributes[c.ColumnName].indexNo != -1) main = i;
+            }
+            JArray objects = new JArray();
+            if (main == -1)
+            {
+                IndexCatalog? index;
+                system.catalogManager.GetIndex(command.TableName, command.Conditions[main].ColumnName, out index);
+                indexScan.OpenScan(GetIndex(index?.IndexName), command.Conditions[main].Op, command.Conditions[main].Value);
+                var rec = GetRecordFile(command.TableName);
+                RID e;
+                Record r;
+                while (indexScan.NextEntry(out e))
+                {
+                    bool s = true;
+                    r = rec.GetRec(e);
+                    for (int i = 0; i < command.Conditions.Length(); i++)
+                    {
+                        if (i == main) continue;
+                        var cond = command.Conditions[i];
+                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value, cond.Op, attributes[cond.ColumnName].attributeType))
+                        {
+                            s = false;
+                            break;
+                        }
+                    }
+                    if (s)
+                    {
+                        var obj = RecToObj(in r, attributes.Values);
+                        objects.Add(obj);
+                    }
+                }
+            }
+            else
+            {
+                fileScan.OpenScan(GetRecordFile(command.TableName));
+                Record r;
+                while (fileScan.NextRecord(out r))
+                {
+                    bool s = true;
+                    foreach (var cond in command.Conditions)
+                    {
+                        if (!FileScan.Satisfied(r.Data.AsSpan(), cond.Value, cond.Op, attributes[cond.ColumnName].attributeType))
+                        {
+                            s = false;
+                            break;
+                        }
+                    }
+                    if (s)
+                    {
+                        var obj = RecToObj(in r, attributes.Values);
+                        objects.Add(obj);
 
+                    }
+                }
+            }
+            return objects;
             // 1 检查表 command.TableName 是否存在，不存在抛异常
 
             // 2 system.catalogManager.GetAttributes 获取列信息
             // 3 检查条件中每一列 command.Conditions[i].ColumnName 是否存在 不存在抛异常
             // 4 检查条件中每一列，是否有存在索引的，如果有则使用indexScan来以这一列为主要条件查询，否则用fileScan
             // 4.5 其他条件，则在fileScan或者indexScan的结果上暴力查询
-            throw new NotImplementedException();
         }
         public void Quit(Interpreter.Quit command)
         {

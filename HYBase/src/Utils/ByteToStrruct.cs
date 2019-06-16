@@ -13,6 +13,12 @@ namespace HYBase.Utils
             return Encoding.UTF8.GetString(bytes, 0, length);
 
         }
+        public static string BytesToString(byte[] bytes, int start, int len)
+        {
+            var length = bytes.Skip(start).Take(len).TakeWhile(b => b != 0).Count();
+            return Encoding.UTF8.GetString(bytes, 0, length);
+
+        }
         public static unsafe T ByteArrayToStructure<T>(byte[] bytes) where T : struct
         {
             fixed (byte* ptr = &bytes[0])

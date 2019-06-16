@@ -101,6 +101,22 @@ namespace HYBase.CatalogManager
             while (scan.NextRecord(out r))
             {
                 indexCatalog.DeleteRec(r.Rid);
+                scan.CloseScan();
+                scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+                var ind = ByteArrayToStructure<IndexCatalog>(r.Data);
+                while (scan.NextRecord(out r))
+                {
+
+                    var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                    if (BytesToString(attr.attributeName) == ind.AttributeName)
+                    {
+                        attr.indexNo = -1;
+                        r.Data = StructureToByteArray(attr);
+                        attrCatalog.UpdateRec(r);
+                        scan.CloseScan();
+                        break;
+                    }
+                }
                 return;
             }
             scan.CloseScan();

@@ -40,6 +40,7 @@ namespace HYBase.IndexManager
             WriteHeader();
             file.Close();
         }
+
         public void Init()
         {
             file.DeallocatePages(); //Deallocate all pages
