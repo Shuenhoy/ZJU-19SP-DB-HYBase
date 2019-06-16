@@ -107,7 +107,8 @@ namespace HYBase.IndexManager
                             {
                                 state = ScanState.Forward;
                                 (l, id) = index.FindLast(compValue).Value;
-                                if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), index.fileHeader.AttributeType) == 0) Forward();
+                                if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), index.fileHeader.AttributeType) == 0)
+                                    Forward();
                             }
                             else
                             {

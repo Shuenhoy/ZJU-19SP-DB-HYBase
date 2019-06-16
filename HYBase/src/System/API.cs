@@ -114,7 +114,7 @@ namespace HYBase.System
             var recfile = GetRecordFile(command.TableName);
             fileScan.OpenScan(recfile);
             Record r;
-            while (!fileScan.NextRecord(out r))
+            while (fileScan.NextRecord(out r))
             {
                 index.InsertEntry(r.Data.AsSpan().Slice(attr.Value.offset, attr.Value.attributeLength).ToArray(),
                     r.Rid);
@@ -127,7 +127,8 @@ namespace HYBase.System
         }
         public void DropIndex(Interpreter.DropIndex command)
         {
-            if (!system.catalogManager.IndexExist(command.IndexName))
+            var i = system.catalogManager.GetIndex(command.IndexName);
+            if (!i.HasValue)
             {
                 throw new Exception("no such index!");
             }

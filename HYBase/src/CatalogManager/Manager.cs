@@ -191,6 +191,39 @@ namespace HYBase.CatalogManager
             return false;
 
         }
+        public IndexCatalog? GetIndex(string indexName)
+        {
+            Record r;
+            scan.OpenScan(indexCatalog, 32, 64, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(indexName));
+
+            while (scan.NextRecord(out r))
+            {
+
+                scan.CloseScan();
+                return ByteArrayToStructure<IndexCatalog>(r.Data);
+            }
+            return null;
+
+        }
+        public void RemoveIndex(string tableName, string columnName)
+        {
+            scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+
+            Record r;
+            while (scan.NextRecord(out r))
+            {
+                var attr = ByteArrayToStructure<AttributeCatalog>(r.Data);
+                if (BytesToString(attr.attributeName) == columnName)
+                {
+                    scan.CloseScan();
+                    attr.indexNo = -1;
+                    r.Data = StructureToByteArray(attr);
+                    attrCatalog.UpdateRec(r);
+                    return;
+                }
+            }
+            scan.CloseScan();
+        }
         public AttributeCatalog? GetColumn(string tableName, String columnName)
         {
             scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
