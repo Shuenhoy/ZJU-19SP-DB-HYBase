@@ -67,7 +67,7 @@ namespace HYBase.System
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"ERROR: {ex.Message} \n {ex.StackTrace}");
+                    Console.WriteLine($"ERROR: {ex.Message}");
                 }
             }
         }

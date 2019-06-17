@@ -33,7 +33,7 @@ namespace HYBase.Interpreter
                         Console.WriteLine(res.ToString(Formatting.Indented));
                     else
                         writer.WriteLine(res.ToString(Formatting.Indented));
-                    Console.WriteLine($"total: {res.Length()} record(s).");
+                    // Console.WriteLine($"total: {res.Length()} record(s).");
                     break;
                 case CreateTable c:
                     api.CreateTable(c);

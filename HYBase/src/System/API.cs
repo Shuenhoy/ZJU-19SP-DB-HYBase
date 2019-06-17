@@ -287,10 +287,21 @@ namespace HYBase.System
                 system.catalogManager.GetIndex(command.TableName, command.Conditions[main].ColumnName, out index);
                 indexScan.OpenScan(GetIndex(index?.IndexName), command.Conditions[main].Op, command.Conditions[main].Value.Item1);
                 var rec = GetRecordFile(command.TableName);
-                RID e;
-                Record r;
-                while (indexScan.NextEntry(out e))
+                List<RID> rids = new List<RID>();
+
                 {
+                    RID e;
+
+                    while (indexScan.NextEntry(out e))
+                    {
+                        rids.Add(e);
+                    }
+                }
+                rids.Sort((x, y) => x.PageID.CompareTo(y.PageID));
+                foreach (RID e in rids)
+                {
+                    Record r;
+
                     bool s = true;
                     r = rec.GetRec(e);
                     for (int i = 0; i < command.Conditions.Length(); i++)
