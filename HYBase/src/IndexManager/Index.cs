@@ -99,7 +99,16 @@ namespace HYBase.IndexManager
 
             sleaf.Next = leaf.Next;
             sleaf.Prev = leaf.pageNum;
+            if (leaf.Next != -1)
+            {
+                var pnext = GetLeafNode(leaf.Next);
+                pnext.Prev = sleaf.pageNum;
+                SetLeafNode(pnext);
+                UnPin(pnext);
+            }
             leaf.Next = sleaf.pageNum;
+
+
 
             if (insertIndex >= center)
             {

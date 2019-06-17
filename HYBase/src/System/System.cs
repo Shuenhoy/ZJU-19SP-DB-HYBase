@@ -15,7 +15,6 @@ namespace HYBase.System
         internal IndexManager.IndexManager indexManager;
         internal Interpreter.Interpreter interpreter;
         internal API api;
-        Stopwatch watch;
         private BufferManager.PagedFileManager pagedFileManager;
         public DataBaseSystem(string workdir = ".")
         {
@@ -23,7 +22,6 @@ namespace HYBase.System
             Directory.SetCurrentDirectory(workdir);
             Console.WriteLine("Welcome to HYBase, a simple DBS");
             Console.WriteLine("working at " + Directory.GetCurrentDirectory());
-            watch = new Stopwatch();
             pagedFileManager = new BufferManager.PagedFileManager();
             recoardManager = new RecordManager.RecordManager(pagedFileManager);
             indexManager = new IndexManager.IndexManager(pagedFileManager);
@@ -58,6 +56,8 @@ namespace HYBase.System
                 var line = Console.ReadLine();
                 try
                 {
+                    Stopwatch watch = new Stopwatch();
+
                     watch.Start();
 
                     interpreter.Exec(line);

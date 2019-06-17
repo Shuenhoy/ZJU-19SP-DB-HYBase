@@ -133,10 +133,11 @@ namespace HYBase.System
                 throw new Exception("no such index!");
             }
             system.catalogManager.DropIndex(command.IndexName);
-            var index = indexs[command.IndexName];
-            if (index != null)
+            var index = indexs.TryGetValue(command.IndexName);
+            if (!index.IsNone)
             {
-                index.Close();
+                indexs.Remove(command.IndexName);
+                index.First().Close();
             }
             File.Delete($"index/{command.IndexName}");
             // 1 使用 system.catalogManager.DropIndex
@@ -441,6 +442,15 @@ namespace HYBase.System
                     }
                     if (s)
                     {
+                        rec.DeleteRec(r.Rid);
+                        var indexs = system.catalogManager.GetIndexs(command.TableName);
+
+                        foreach (var i in indexs)
+                        {
+                            var index0 = GetIndex(i.IndexName);
+                            index0.DeleteEntry(
+                                r.Data.AsSpan().Slice(attributes[i.AttributeName].offset, attributes[i.AttributeName].attributeLength).ToArray(), r.Rid);
+                        }
                         rec.DeleteRec(r.Rid);
 
                     }

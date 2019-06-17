@@ -221,4 +221,26 @@ namespace HYBase.Interpreter
             return HashCode.Combine(FileName.GetHashCode());
         }
     }
+
+    public class Output : Command
+    {
+        public readonly string FileName;
+
+        public Output(string fileName)
+            => FileName = fileName;
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+            Output other = (Output)obj;
+            return FileName == other.FileName;
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(FileName.GetHashCode());
+        }
+    }
 }

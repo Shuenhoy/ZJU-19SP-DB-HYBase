@@ -98,17 +98,18 @@ namespace HYBase.CatalogManager
             }
             scan.CloseScan();
         }
-        public void DropIndex(String tableName)
+        public void DropIndex(String indexName)
         {
-            scan.OpenScan(indexCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
+            scan.OpenScan(indexCatalog, 32, 64, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(indexName));
 
             Record r;
             while (scan.NextRecord(out r))
             {
+                var ind = ByteArrayToStructure<IndexCatalog>(r.Data);
+
                 indexCatalog.DeleteRec(r.Rid);
                 scan.CloseScan();
-                scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, Encoding.UTF8.GetBytes(tableName));
-                var ind = ByteArrayToStructure<IndexCatalog>(r.Data);
+                scan.OpenScan(attrCatalog, 32, 0, AttrType.String, CompOp.EQ, ind.relationName);
                 while (scan.NextRecord(out r))
                 {
 
@@ -271,7 +272,7 @@ namespace HYBase.CatalogManager
                     scan.CloseScan();
                     index = null;
                     if (attr.indexNo < 0) return false;
-                    scan.OpenScan(indexCatalog, 4, 48, AttrType.Int, CompOp.EQ, BitConverter.GetBytes(attr.indexNo));
+                    scan.OpenScan(indexCatalog, 4, 96, AttrType.Int, CompOp.EQ, BitConverter.GetBytes(attr.indexNo));
 
                     while (scan.NextRecord(out r))
                     {

@@ -20,7 +20,8 @@ namespace HYBase
                     {
                         float aa = BitConverter.ToSingle(a);
                         float bb = BitConverter.ToSingle(b);
-                        return aa > bb ? 1 : Math.Abs(aa - bb) < 1e-6 ? 0 : -1;
+                        float sub = aa - bb;
+                        return Math.Abs(aa - bb) < 1e-9 ? 0 : aa - bb > 0 ? 1 : -1;
                     }
                 case AttrType.String:
                     {

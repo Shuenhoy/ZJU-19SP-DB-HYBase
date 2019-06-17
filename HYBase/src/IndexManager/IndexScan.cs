@@ -128,7 +128,7 @@ namespace HYBase.IndexManager
                             id = l.ChildrenNumber - 1;
                         }
                     }
-                    else if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) == 0) Backward();
+                    else if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) >= 0) Backward();
 
 
                 }
@@ -140,7 +140,7 @@ namespace HYBase.IndexManager
                 if (id < 0) CloseScan();
                 else if (op == CompOp.GT)
                 {
-                    if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) == 0) Forward();
+                    if (BytesComp.Comp(l.Data.Get(id), compValue.AsSpan(), i.fileHeader.AttributeType) <= 0) Forward();
                 }
 
             }

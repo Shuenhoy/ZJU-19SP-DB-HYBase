@@ -132,8 +132,8 @@ namespace HYBase.Interpreter
         internal static Parser<(byte[], AttrType)> value =
             choice(
                 strLit,
-                intLit,
-                floatLit
+                attempt(floatLit),
+                intLit
             );
 
         internal static Parser<Condition> cond =
@@ -200,12 +200,18 @@ namespace HYBase.Interpreter
             from _eoc in eoc
 
             select new ExecFile(file) as Command;
+        internal static Parser<Command> output =
+            from _0 in keywords("output")
+            from file in asString(many(noneOf(";")))
+            from _eoc in eoc
+
+            select new Output(file) as Command;
         internal static Parser<Seq<Command>> nothing =
             from _0 in either(eof, spaces1)
             select Seq<Command>();
         internal static Parser<Command[]> commands =
             from cs in either(many1(
-                from t in choice(execfile, quit, insert, attempt(createIndex), createTable, attempt(delete), attempt(dropTable), dropIndex, selects)
+                from t in choice(execfile, quit, insert, attempt(createIndex), createTable, attempt(delete), attempt(dropTable), dropIndex, selects, output)
                 from _ in many(oneOf(" \n\t"))
                 select t
                 ), nothing)
