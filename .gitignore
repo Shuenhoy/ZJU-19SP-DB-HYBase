@@ -12,7 +12,11 @@ out/
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 res/
+res1/
 res2/
+res3/
+res_test/
+temp.txt
 with_index.txt
 no_index.txt
 # Build results

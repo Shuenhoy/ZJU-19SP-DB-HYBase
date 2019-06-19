@@ -12,7 +12,7 @@ namespace HYBase.BufferManager
         private BufferManager buffer;
         public PagedFileManager()
         {
-            buffer = new BufferManager(32);
+            buffer = new BufferManager(3200);
         }
         /// <summary>
         /// 创建新的分页文件

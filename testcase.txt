@@ -1,0 +1,36 @@
+create table student(sno char(10), sage int, score float, primary key(sno));
+insert into student values('hr',21,123.4);
+insert into student values('xy',20,567.8);
+select * from student;
+select * from student where sno='hr';
+select * from student where sno!='hr';
+select * from student where sage<21;
+select * from student where sage<22;
+select * from student where sage>=20;
+select * from student where score>200.0;
+select * from student where sno='xy' and sage>=21;
+select * from student where sno='xy' and sage=20 and score>500.0;
+delete from student where sno = 'hr';
+select * from student;
+delete from student;
+select * from student;
+insert into student values('hr',21,123.4);
+insert into student values('xy',20,567.8);
+create index student_sage on student(sage);
+select * from student where sage<21;
+drop index student_sage;
+
+insert into student values(123,456);
+// ERROR: incorrect number of values! Expected 3 but got 2
+ insert into student values(1234,567,123);
+// ERROR: incorrect type of argument 0! Expect String but get Int
+
+insert into stu values(123);
+// ERROR: no such table!
+
+insert int o student values(123);
+// ERROR: error at (line 1, column 11): unexpected " ", expecting 'o'
+
+drop table student;
+select * from student;
+// ERROR: no such table!
